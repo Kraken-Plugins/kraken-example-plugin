@@ -4,6 +4,7 @@ package com.krakenplugins.example.fishing;
 import com.kraken.api.input.mouse.strategy.MouseMovementStrategy;
 import com.kraken.api.query.container.inventory.InventoryOrder;
 import com.krakenplugins.example.fishing.script.FishingLocation;
+import com.krakenplugins.example.fishing.script.FishingMethod;
 import net.runelite.client.config.*;
 
 @ConfigGroup("autofisher")
@@ -63,7 +64,7 @@ public interface FishingConfig extends Config {
 
 	@ConfigSection(
 			name = "Fishing Settings",
-			description = "General options for configuring fishing.",
+			description = "General options for configuring fishing agnostic of location.",
 			position = 2
 	)
 	String fishing = "fishing";
@@ -101,15 +102,41 @@ public interface FishingConfig extends Config {
 		return InventoryOrder.TOP_DOWN_LEFT_RIGHT;
 	}
 
+	@ConfigSection(
+			name = "Barbarian Fishing Settings",
+			description = "General options for configuring fishing when in the barbarian village.",
+			position = 3
+	)
+	String barbarianFishing = "barbarianFishing";
+
 	@ConfigItem(
 			keyName = "barbVillageCook",
-			name = "Cook Fish (Barb Village)",
+			name = "Cook Fish",
 			description = "Automatically uses the fire to cook fish in the Barbarian Village.",
-			position = 4,
-			section = fishing
+			position = 1,
+			section = barbarianFishing
 	)
 	default boolean barbVillageCook() {
 		return false;
+	}
+
+
+	@ConfigSection(
+			name = "Karamja Fishing Settings",
+			description = "General options for configuring fishing when at Musa point (Karamja).",
+			position = 4
+	)
+	String karamjaFishing = "karamjaFishing";
+
+	@ConfigItem(
+			keyName = "fishingMethod",
+			name = "Fishing Method",
+			description = "Choose to fish lobsters via caging or Tuna/Swordfish via Harpooning.",
+			position = 1,
+			section = karamjaFishing
+	)
+	default FishingMethod fishingMethod() {
+		return FishingMethod.CAGE;
 	}
 
 	@ConfigSection(
