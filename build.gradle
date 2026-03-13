@@ -63,6 +63,12 @@ dependencies {
 subprojects {
     dependencies {
         compileOnly group: 'com.github.kraken', name:'kraken-api', version: krakenApiVersion
+
+        // Kraken API requires bytebuddy to be on the runtime class path, how developers want to integrate this into
+        // their build and release process with RuneLite is up to them. The Kraken client is the preferred way to
+        // load plugins which use the Kraken API since it already has these dependencies available at runtime
+        implementation("net.bytebuddy:byte-buddy:1.18.4")
+
         compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
         compileOnly 'org.projectlombok:lombok:1.18.30'
         annotationProcessor 'org.projectlombok:lombok:1.18.30'
