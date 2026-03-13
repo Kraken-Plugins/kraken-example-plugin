@@ -3,6 +3,8 @@ package com.krakenplugins.example.fishing.script.state;
 import com.google.inject.Inject;
 import com.kraken.api.core.script.PriorityTask;
 import com.kraken.api.query.container.inventory.InventoryEntity;
+import com.kraken.api.service.ui.tab.InterfaceTab;
+import com.kraken.api.service.ui.tab.TabService;
 import com.kraken.api.service.util.RandomService;
 import com.kraken.api.service.util.SleepService;
 import com.krakenplugins.example.fishing.FishingConfig;
@@ -19,6 +21,9 @@ public class DropFish extends PriorityTask {
 
     @Inject
     private FishingPlugin plugin;
+
+    @Inject
+    private TabService tabService;
 
     private boolean isDropping = false;
 
@@ -52,6 +57,10 @@ public class DropFish extends PriorityTask {
 
     @Override
     public int execute() {
+        if(!tabService.switchTo(InterfaceTab.INVENTORY)) {
+            log.error("Failed to switch to inventory tab to drop fish.");
+        }
+
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         List<InventoryEntity> items = ctx.inventory()
                 .orderBy(config.dropPattern())
@@ -63,11 +72,11 @@ public class DropFish extends PriorityTask {
             missChanceState = 0;
             recoveryCounter = 0;
             plugin.setLastDropTimestamp(System.currentTimeMillis()); // <--- ADD THIS
-            return 600;
+            return 0;
         }
 
         // Determine drop count for this specific tick (burst vs single)
-        int dropsThisTick = RandomService.between(2, 6);
+        int dropsThisTick = RandomService.between(4, 6);
 
         for (int i = 0; i < Math.min(items.size(), dropsThisTick); i++) {
             InventoryEntity item = items.get(i);
@@ -86,10 +95,10 @@ public class DropFish extends PriorityTask {
             item.drop();
             handleRecovery();
 
-            SleepService.sleep(15, 46);
+            SleepService.sleep(13, 41);
         }
 
-        return RandomService.between(400, 600);
+        return RandomService.between(50, 105);
     }
 
     /**

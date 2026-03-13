@@ -13,6 +13,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FishBarbarianVillage extends PriorityTask {
 
+    private static final long IDLE_RESET_MS = 2000;
+    private static final long DROP_IDLE_BYPASS_MS = 5000;
+    private static final double BASE_REACTION_CHANCE = 0.01;
+
+    private static final int LOW_TICK_THRESHOLD = 1000;
+    private static final int MEDIUM_TICK_THRESHOLD = 6000; // 1 hour
+    private static final int HIGH_TICK_THRESHOLD = 12000; // 2 hours
+    private static final int VERY_HIGH_TICK_THRESHOLD = 18000; // 3 hours
+
+    private static final double INCREMENT_LOW = 0.07; // 7% increase every tick
+    private static final double INCREMENT_MEDIUM = 0.025; // 2.5% increase every tick
+    private static final double INCREMENT_HIGH = 0.015; // 1.5% increase every tick
+    private static final double INCREMENT_VERY_HIGH = 0.01; // 1% increase every tick
+    private static final double INCREMENT_EXTREME = 0.005; // 0.5% increase every tick
+
     @Inject
     private FishingPlugin plugin;
 
@@ -32,36 +47,38 @@ public class FishBarbarianVillage extends PriorityTask {
                 !ctx.inventory().isFull();
     }
 
-    // TODO Skip idle after a drop has occurred. Just do the click.
     @Override
     public int execute() {
         // If it's been more than 2000ms since the last execute call, we assume
         // this is a fresh "idle" session (we just finished fishing), so we reset the counter.
-        if (System.currentTimeMillis() - lastLoopTime > 2000) {
+        long now = System.currentTimeMillis();
+        if (now - lastLoopTime > IDLE_RESET_MS) {
             idleTicks = 0;
         }
-        lastLoopTime = System.currentTimeMillis();
+        lastLoopTime = now;
 
         // Check if we recently finished dropping (e.g., within 4 seconds)
         // If so, we are "Active" and should click immediately, bypassing the idle simulation.
-        long timeSinceDrop = System.currentTimeMillis() - plugin.getLastDropTimestamp();
-        boolean isActivePlayer = timeSinceDrop < 4000;
+        long lastDropTimestamp = plugin.getLastDropTimestamp();
+        long timeSinceDrop = now - lastDropTimestamp;
+        boolean skipIdleAfterDrop = lastDropTimestamp > 0 && timeSinceDrop < DROP_IDLE_BYPASS_MS;
 
-        if (!isActivePlayer) {
-
+        if (!skipIdleAfterDrop) {
             // Calculate a chance to click this tick based on how long we've been waiting.
-            // Tick 0: 5% chance (Fast reaction)
-            // Tick 1: 10% chance
-            // Tick 2: 15% chance
-            // ...
-            // Tick 20+: 100% chance (Guaranteed to click eventually)
-            double reactionChance = 0.02 + (idleTicks * 0.02);
+            // The increment scales by client tick count to simulate fatigue over time.
+            // TODO Add some randomization just because I've been playing for 3 hours doesn't mean Im super slow EVERY single time I go
+            // to a new fishing spot
+            double reactionIncrement = getReactionIncrement();
+            double reactionChance = BASE_REACTION_CHANCE + (idleTicks * reactionIncrement);
+            reactionChance = Math.min(1.0, reactionChance);
 
             if (Math.random() > reactionChance) {
-                log.info("Missed reaction window, increasing reaction chance by 2% next tick. Current chance = {}", reactionChance);
+                log.info("Missed reaction window, increasing reaction chance by {} next tick. Current chance = {}", reactionIncrement, reactionChance);
                 idleTicks++;
                 return RandomService.between(400, 600);
             }
+        } else {
+            idleTicks = 0;
         }
 
         NpcEntity spot = ctx.npcs().withId(FishingLocation.BARBARIAN_VILLAGE.getSpotId()).nearest();
@@ -75,6 +92,9 @@ public class FishBarbarianVillage extends PriorityTask {
             if (spot.interact("Lure")) {
                 // Successful click, reset idle ticks for the next time we become idle
                 idleTicks = 0;
+                if (skipIdleAfterDrop) {
+                    plugin.setLastDropTimestamp(0);
+                }
                 SleepService.sleepUntil(() -> ctx.players().local().isMoving() || ctx.players().local().raw().getAnimation() != -1, 5000);
             }
         } else {
@@ -96,5 +116,22 @@ public class FishBarbarianVillage extends PriorityTask {
     @Override
     public int getPriority() {
         return 0;
+    }
+
+    private double getReactionIncrement() {
+        int tickCount = ctx.getClient().getTickCount();
+        if (tickCount < LOW_TICK_THRESHOLD) {
+            return INCREMENT_LOW;
+        }
+        if (tickCount < MEDIUM_TICK_THRESHOLD) {
+            return INCREMENT_MEDIUM;
+        }
+        if (tickCount < HIGH_TICK_THRESHOLD) {
+            return INCREMENT_HIGH;
+        }
+        if (tickCount < VERY_HIGH_TICK_THRESHOLD) {
+            return INCREMENT_VERY_HIGH;
+        }
+        return INCREMENT_EXTREME;
     }
 }
