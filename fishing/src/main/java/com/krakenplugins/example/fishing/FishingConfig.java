@@ -139,6 +139,17 @@ public interface FishingConfig extends Config {
 		return FishingMethod.CAGE;
 	}
 
+	@ConfigItem(
+			keyName = "bankFishKaramja",
+			name = "Bank Fish",
+			description = "Automatically uses the Karamja charter ship to bank fish in Port Sarim. This will be overriden if Drop fish is checked.",
+			position = 2,
+			section = karamjaFishing
+	)
+	default boolean bankFishKaramja() {
+		return false;
+	}
+
 	@ConfigSection(
 		name = "Overlays",
 		description = "Script overlay options",
@@ -156,6 +167,18 @@ public interface FishingConfig extends Config {
 	default boolean highlightTargetSpot() {
 		return false;
 	}
+
+	@ConfigItem(
+			keyName = "highlightCurrentPath",
+			name = "Highlight Path",
+			description = "Highlights the current path the player will traverse.",
+			position = 2,
+			section = overlay
+	)
+	default boolean highlightCurrentPath() {
+		return false;
+	}
+
 
 	@ConfigItem(
 			keyName = "debug",

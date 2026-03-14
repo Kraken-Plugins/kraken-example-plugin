@@ -1,4 +1,4 @@
-package com.krakenplugins.example.fishing.script.state;
+package com.krakenplugins.example.fishing.script.state.karamja;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

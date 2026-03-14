@@ -1,4 +1,4 @@
-package com.krakenplugins.example.fishing.script.state;
+package com.krakenplugins.example.fishing.script.state.barbarian;
 
 import com.google.inject.Inject;
 import com.kraken.api.core.script.PriorityTask;

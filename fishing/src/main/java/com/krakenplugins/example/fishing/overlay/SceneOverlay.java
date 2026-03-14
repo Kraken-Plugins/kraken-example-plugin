@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.kraken.api.Context;
 import com.kraken.api.query.npc.NpcEntity;
+import com.kraken.api.service.pathfinding.LocalPathfinder;
 import com.krakenplugins.example.fishing.FishingConfig;
 import com.krakenplugins.example.fishing.FishingPlugin;
 import net.runelite.api.Client;
@@ -23,12 +24,14 @@ public class SceneOverlay extends Overlay {
     private final Context ctx;
     private final ModelOutlineRenderer modelOutlineRenderer;
     private final FishingConfig config;
+    private final LocalPathfinder localPathfinder;
 
     @Inject
-    public SceneOverlay(Client client, Context ctx, FishingPlugin plugin, ModelOutlineRenderer modelOutlineRenderer, FishingConfig config) {
+    public SceneOverlay(Client client, Context ctx, FishingPlugin plugin, ModelOutlineRenderer modelOutlineRenderer, FishingConfig config, LocalPathfinder localPathfinder) {
         this.client = client;
         this.plugin = plugin;
         this.ctx = ctx;
+        this.localPathfinder = localPathfinder;
         this.modelOutlineRenderer = modelOutlineRenderer;
         this.config = config;
 
@@ -48,6 +51,10 @@ public class SceneOverlay extends Overlay {
 
         if(config.debug()) {
             renderNearbySpots(graphics);
+        }
+
+        if(config.highlightCurrentPath()) {
+            localPathfinder.renderPath(plugin.getCurrentPath(), graphics, new Color(24, 191, 243));
         }
 
         return null;
