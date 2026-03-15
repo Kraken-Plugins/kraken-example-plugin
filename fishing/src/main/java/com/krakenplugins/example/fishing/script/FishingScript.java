@@ -9,9 +9,7 @@ import com.krakenplugins.example.fishing.FishingConfig;
 import com.krakenplugins.example.fishing.script.state.*;
 import com.krakenplugins.example.fishing.script.state.barbarian.CookFish;
 import com.krakenplugins.example.fishing.script.state.barbarian.FishBarbarianVillage;
-import com.krakenplugins.example.fishing.script.state.karamja.FishKaramja;
-import com.krakenplugins.example.fishing.script.state.karamja.TravelBoat;
-import com.krakenplugins.example.fishing.script.state.karamja.WalkToDocks;
+import com.krakenplugins.example.fishing.script.state.karamja.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,14 +29,18 @@ public class FishingScript extends Script {
     private final FishDraynor fishDraynor;
     private final CookFish cookFish;
     private final WalkToDocks walkToDocks;
-    private final TravelBoat travelBoat;
+    private final TravelPortSarim travelPortSarim;
+    private final BankDepositBox bankDepositBox;
+    private final TravelKaramja travelKaramja;
+    private final WalkToMusaPoint walkToMusaPoint;
 
     @Getter
     private String status = "Initializing";
 
     @Inject
     public FishingScript(final FishingConfig config, final DropFish dropFish, final FishKaramja fishKaramja, final FishBarbarianVillage fishBarbarianVillage,
-                         final FishDraynor fishDraynor, final CookFish cookFish, final WalkToDocks walkToDocks, final TravelBoat travelBoat) {
+                         final FishDraynor fishDraynor, final CookFish cookFish, final WalkToDocks walkToDocks, final TravelPortSarim travelPortSarim,
+                         final BankDepositBox bankDepositBox, final TravelKaramja travelKaramja, final WalkToMusaPoint walkToMusaPoint) {
         this.config = config;
         this.dropFish = dropFish;
         this.fishKaramja = fishKaramja;
@@ -46,7 +48,10 @@ public class FishingScript extends Script {
         this.fishDraynor = fishDraynor;
         this.cookFish = cookFish;
         this.walkToDocks = walkToDocks;
-        this.travelBoat = travelBoat;
+        this.travelPortSarim = travelPortSarim;
+        this.bankDepositBox = bankDepositBox;
+        this.travelKaramja = travelKaramja;
+        this.walkToMusaPoint = walkToMusaPoint;
     }
 
     public void setTasksForLocation(FishingLocation location) {
@@ -61,9 +66,15 @@ public class FishingScript extends Script {
                 break;
             case KARAMJA:
                 tasks.add(fishKaramja);
-                // Safe to add this same as the reason for cook fish task in barb village
+                // Safe to add this same as the reason for cook fish task in barb village. We don't do the check for if
+                // the user has selected config for banking fish here because any time the config is updated we would need to
+                // receive that event and re-compute the tasks to add based on the new config. It's just simpler to keep the config
+                // in the validate() method since its called so often it will instantly pickup config changes.
                 tasks.add(walkToDocks);
-                tasks.add(travelBoat);
+                tasks.add(travelPortSarim);
+                tasks.add(bankDepositBox);
+                tasks.add(travelKaramja);
+                tasks.add(walkToMusaPoint);
                 break;
             case BARBARIAN_VILLAGE:
                 // Safe to always add cook fish task regardless of user config since the activate() method checks

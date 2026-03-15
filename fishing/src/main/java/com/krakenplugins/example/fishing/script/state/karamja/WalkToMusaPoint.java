@@ -7,7 +7,6 @@ import com.kraken.api.service.movement.MovementService;
 import com.kraken.api.service.movement.VariableStrideConfig;
 import com.kraken.api.service.pathfinding.LocalPathfinder;
 import com.kraken.api.service.tile.AreaService;
-import com.kraken.api.service.tile.GameArea;
 import com.krakenplugins.example.fishing.FishingConfig;
 import com.krakenplugins.example.fishing.FishingPlugin;
 import lombok.extern.slf4j.Slf4j;
@@ -15,14 +14,15 @@ import net.runelite.api.coords.WorldPoint;
 
 import java.util.List;
 
+import static com.krakenplugins.example.fishing.script.state.karamja.WalkToDocks.KARAMJA_DOCKS;
+
 @Slf4j
 @Singleton
-public class WalkToDocks extends PriorityTask {
+public class WalkToMusaPoint extends PriorityTask {
 
-    public static final WorldPoint KARAMJA_DOCKS = new WorldPoint(2957, 3147, 0);
+    private static final WorldPoint MUSA_POINT =  new WorldPoint(2924, 3179, 0);
 
     private final FishingConfig config;
-    private final GameArea karamjaFishingArea;
     private final LocalPathfinder localPathfinder;
     private final MovementService movementService;
     private final FishingPlugin plugin;
@@ -34,12 +34,11 @@ public class WalkToDocks extends PriorityTask {
             .build();
 
     @Inject
-    public WalkToDocks(FishingPlugin plugin, AreaService areaService, FishingConfig config, LocalPathfinder localPathfinder, MovementService movementService) {
+    public WalkToMusaPoint(FishingPlugin plugin, AreaService areaService, FishingConfig config, LocalPathfinder localPathfinder, MovementService movementService) {
         this.config = config;
         this.plugin = plugin;
         this.localPathfinder = localPathfinder;
         this.movementService = movementService;
-        karamjaFishingArea = areaService.createAreaFromRadius(config.fishingLocation().getLocation(), 8);
     }
 
     @Override
@@ -53,22 +52,21 @@ public class WalkToDocks extends PriorityTask {
             return true;
         }
 
-        boolean isFull = ctx.inventory().isFull();
-
+        boolean hasSpace = !ctx.inventory().isFull();
         List<Integer> fishIds = config.fishingLocation().getFishIds();
-        boolean hasFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() > 0;
-        return isFull &&
-                hasFish &&
-                ctx.players().local().isIdle() &&
-                !isTraversing &&
-                config.bankFishKaramja() &&
-                ctx.players().local().isInArea(karamjaFishingArea);
+        boolean hasNoFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() == 0;
+        boolean playerInKaramja = ctx.players().local().raw().getWorldLocation().distanceTo(KARAMJA_DOCKS) <= 7;
+
+        return hasSpace &&
+                hasNoFish &&
+                playerInKaramja &&
+                config.bankFishKaramja();
     }
 
     @Override
     public int execute() {
         WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
-        if (playerLocation.distanceTo(KARAMJA_DOCKS) <= 7) {
+        if (playerLocation.distanceTo(MUSA_POINT) <= 7) {
             isTraversing = false;
             return 1000;
         }
@@ -78,10 +76,10 @@ public class WalkToDocks extends PriorityTask {
         try {
             // Try to find a DIRECT path to the real destination
             // We do not use backoff here. We want to know if the "Good" path is valid.
-            List<WorldPoint> directPath = localPathfinder.findApproximatePath(playerLocation, KARAMJA_DOCKS);
+            List<WorldPoint> directPath = localPathfinder.findApproximatePath(playerLocation, MUSA_POINT);
 
             if (directPath != null && !directPath.isEmpty()) {
-                log.info("Direct path found to: KARAMJA_DOCKS.");
+                log.info("Direct path found to: MUSA_POINT.");
                 List<WorldPoint> stridedPath = movementService.applyVariableStride(directPath, strideConfig);
 
                 plugin.getCurrentPath().clear();
@@ -110,7 +108,7 @@ public class WalkToDocks extends PriorityTask {
             isTraversing = false;
             return 1000;
         } catch (Exception e) {
-            log.error("Error during walk to Karamja Docks", e);
+            log.error("Error during walk to Musa Point", e);
             isTraversing = false;
             return 1000;
         }
@@ -118,6 +116,6 @@ public class WalkToDocks extends PriorityTask {
 
     @Override
     public String status() {
-        return "Walking to Karamja Docks...";
+        return "Walking to Musa Point...";
     }
 }

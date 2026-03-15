@@ -3,8 +3,10 @@ package com.krakenplugins.example.fishing.script.state.karamja;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.kraken.api.core.script.PriorityTask;
+import com.kraken.api.query.container.inventory.InventoryEntity;
 import com.kraken.api.query.npc.NpcEntity;
 import com.kraken.api.service.util.RandomService;
+import com.kraken.api.service.util.SleepService;
 import com.krakenplugins.example.fishing.FishingConfig;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,9 +16,9 @@ import static com.krakenplugins.example.fishing.script.state.karamja.WalkToDocks
 
 @Slf4j
 @Singleton
-public class TravelBoat extends PriorityTask {
+public class TravelPortSarim extends PriorityTask {
 
-    private static final int CUSTOMS_OFFICER_NPC_ID = 14984; // Travel
+    private static final int CUSTOMS_OFFICER_NPC_ID = 14984;
 
     @Inject
     private FishingConfig config;
@@ -31,11 +33,10 @@ public class TravelBoat extends PriorityTask {
         boolean isFull = ctx.inventory().isFull();
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         boolean hasFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() > 0;
-        int distanceToDocks = ctx.players().local().raw().getWorldLocation().distanceTo(KARAMJA_DOCKS);
-        log.info("Distance to docks: {}", distanceToDocks);
+        boolean atKaramjaDocks = ctx.players().local().raw().getWorldLocation().distanceTo(KARAMJA_DOCKS) <= 7;
         return isFull &&
                 hasFish &&
-                distanceToDocks <= 7 &&
+                atKaramjaDocks &&
                 config.bankFishKaramja();
     }
 
@@ -47,14 +48,24 @@ public class TravelBoat extends PriorityTask {
             return 600;
         }
 
-        // TODO Check that we have 30gp in the inventory
-        log.info("Interacting with travel customs officer.");
+        InventoryEntity coins = ctx.inventory().withId(995).first();
+        if(coins == null) {
+            log.error("No coins found in inventory, cannot travel on boat to Port Sarim.");
+            return 3200;
+        }
+
+        if(coins.raw().getQuantity() < 30) {
+            log.error("Not enough coins to travel.");
+            return 3200;
+        }
+
         customsOfficer.interact("Travel");
+        SleepService.sleepWhile(() -> ctx.players().local().isMoving(), 10000);
         return RandomService.between(1800, 3200);
     }
 
     @Override
     public String status() {
-        return "Traveling on Boat...";
+        return "Traveling to Port Sarim...";
     }
 }
