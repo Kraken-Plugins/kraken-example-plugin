@@ -37,9 +37,10 @@ public class BankDepositBox extends PriorityTask {
     public boolean validate() {
         List<Integer> fishIds = config.fishingLocation().getFishIds();
 
+        // TODO After traveling to port sarim it gets stuck here
         boolean isFull = ctx.inventory().isFull();
-        boolean hasFish = ctx.inventory().hasItems(fishIds);
-            return isFull &&
+        boolean hasFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() > 0;
+        return isFull &&
                 hasFish &&
                 ctx.players().local().isIdle() &&
                 config.bankFishKaramja() &&
