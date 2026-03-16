@@ -35,18 +35,24 @@ public class FishKaramja extends PriorityTask {
     @Override
     public int execute() {
         NpcEntity spot = ctx.npcs().withId(FishingLocation.KARAMJA.getSpotId()).nearest();
-        if(spot != null) {
+        if (spot != null) {
             plugin.getCurrentPath().clear();
             plugin.setTargetSpot(spot);
-            if(config.useMouse()) {
+
+            if (config.useMouse()) {
                 ctx.getMouse().move(spot.raw());
             }
 
             if (spot.interact(config.fishingMethod().getInteractionName())) {
-                SleepService.sleepUntil(() -> ctx.players().local().isMoving() || ctx.players().local().raw().getAnimation() != -1, 5000);
+                SleepService.sleepUntil(
+                        () -> ctx.players().local().isMoving()
+                                || ctx.players().local().raw().getAnimation() != -1,
+                        5000
+                );
+                plugin.setTargetSpot(null);
             }
         } else {
-            log.info("No spot found.");
+            plugin.setTargetSpot(null);
         }
         return RandomService.between(1200, 1800);
     }

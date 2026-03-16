@@ -69,19 +69,26 @@ public class SceneOverlay extends Overlay {
     }
 
     private void renderTargetSpot() {
-        if(plugin.getTargetSpot() != null && plugin.getTargetSpot().raw() != null) {
+        if (plugin.getTargetSpot() != null
+                && plugin.getTargetSpot().raw() != null
+                && plugin.getTargetSpot().raw().getModel() != null) {  // <-- add this
             modelOutlineRenderer.drawOutline(plugin.getTargetSpot().raw(), 2, Color.GREEN, 2);
         }
     }
 
     private void renderDepositBox() {
-        if(plugin.getDepositBox() != null && plugin.getDepositBox().raw() != null) {
+        if (plugin.getDepositBox() != null
+                && plugin.getDepositBox().raw() != null
+                && plugin.getDepositBox().raw().getRenderable() != null
+                && plugin.getDepositBox().raw().getRenderable().getModel() != null) {
             modelOutlineRenderer.drawOutline(plugin.getDepositBox().raw(), 2, Color.GREEN, 2);
         }
     }
 
     private void renderNpc() {
-        if(plugin.getNpc() != null && plugin.getNpc().raw() != null) {
+        if (plugin.getNpc() != null
+                && plugin.getNpc().raw() != null
+                && plugin.getNpc().raw().getModel() != null) {
             modelOutlineRenderer.drawOutline(plugin.getNpc().raw(), 2, Color.GREEN, 2);
         }
     }

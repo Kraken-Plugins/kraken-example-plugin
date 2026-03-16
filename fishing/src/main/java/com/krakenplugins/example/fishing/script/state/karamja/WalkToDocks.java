@@ -49,18 +49,18 @@ public class WalkToDocks extends PriorityTask {
 
     @Override
     public boolean validate() {
+        // If actively traversing, keep running regardless of idle state
         if (isTraversing) {
             return true;
         }
 
         boolean isFull = ctx.inventory().isFull();
-
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         boolean hasFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() > 0;
+
         return isFull &&
                 hasFish &&
-                ctx.players().local().isIdle() &&
-                !isTraversing &&
+                ctx.players().local().isIdle() &&  // only require idle on fresh trigger
                 config.bankFishKaramja() &&
                 ctx.players().local().isInArea(karamjaFishingArea);
     }
@@ -70,30 +70,30 @@ public class WalkToDocks extends PriorityTask {
         WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
         if (playerLocation.distanceTo(KARAMJA_DOCKS) <= 7) {
             isTraversing = false;
+            plugin.getCurrentPath().clear(); // arrived, safe to clear
             return 1000;
         }
 
         isTraversing = true;
 
         try {
-            // Try to find a DIRECT path to the real destination
-            // We do not use backoff here. We want to know if the "Good" path is valid.
             List<WorldPoint> directPath = localPathfinder.findApproximatePath(playerLocation, KARAMJA_DOCKS);
 
             if (directPath != null && !directPath.isEmpty()) {
                 log.info("Direct path found to: KARAMJA_DOCKS.");
                 List<WorldPoint> stridedPath = movementService.applyVariableStride(directPath, strideConfig);
 
+                // Only clear AFTER we have a valid new path
                 plugin.getCurrentPath().clear();
                 plugin.getCurrentPath().addAll(stridedPath);
 
                 movementService.traversePath(ctx.getClient(), stridedPath);
-                isTraversing = false;
+
+                // Don't reset isTraversing here — let validate() keep task alive
+                // while player is still walking the stride
                 return 600;
             }
 
-            // Direct path failed, use BACKOFF
-            log.info("Direct path failed. Attempting backoff...");
             List<WorldPoint> backoffPath = localPathfinder.findApproximatePathWithBackoff(playerLocation, KARAMJA_DOCKS, 5);
 
             if (backoffPath != null && !backoffPath.isEmpty()) {
@@ -103,12 +103,13 @@ public class WalkToDocks extends PriorityTask {
                 plugin.getCurrentPath().addAll(stridedPath);
 
                 movementService.traversePath(ctx.getClient(), stridedPath);
-                return 0;
+                return 600;
             }
 
             log.error("Failed to generate any path (Direct or Backoff)");
             isTraversing = false;
             return 1000;
+
         } catch (Exception e) {
             log.error("Error during walk to Karamja Docks", e);
             isTraversing = false;
