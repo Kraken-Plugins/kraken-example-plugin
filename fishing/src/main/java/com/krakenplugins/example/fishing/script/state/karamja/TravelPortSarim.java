@@ -27,10 +27,6 @@ public class TravelPortSarim extends PriorityTask {
     @Inject
     private FishingPlugin plugin;
 
-    // TODO Fix NPE in path
-    // Add mouse movement to actions
-    // Highlight key objects NPC's
-
     @Override
     public int getPriority() {
         return 0;
