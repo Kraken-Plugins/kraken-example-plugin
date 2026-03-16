@@ -36,6 +36,7 @@ public class FishKaramja extends PriorityTask {
     public int execute() {
         NpcEntity spot = ctx.npcs().withId(FishingLocation.KARAMJA.getSpotId()).nearest();
         if(spot != null) {
+            plugin.getCurrentPath().clear();
             plugin.setTargetSpot(spot);
             if(config.useMouse()) {
                 ctx.getMouse().move(spot.raw());

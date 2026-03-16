@@ -9,6 +9,7 @@ import com.kraken.api.service.bank.DepositBoxService;
 import com.kraken.api.service.util.RandomService;
 import com.kraken.api.service.util.SleepService;
 import com.krakenplugins.example.fishing.FishingConfig;
+import com.krakenplugins.example.fishing.FishingPlugin;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.coords.WorldPoint;
 
@@ -26,6 +27,9 @@ public class BankDepositBox extends PriorityTask {
     private FishingConfig config;
 
     @Inject
+    private FishingPlugin plugin;
+
+    @Inject
     private DepositBoxService depositBoxService;
 
     @Override
@@ -37,7 +41,6 @@ public class BankDepositBox extends PriorityTask {
     public boolean validate() {
         List<Integer> fishIds = config.fishingLocation().getFishIds();
 
-        // TODO After traveling to port sarim it gets stuck here
         boolean isFull = ctx.inventory().isFull();
         boolean hasFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() > 0;
         return isFull &&
@@ -62,23 +65,23 @@ public class BankDepositBox extends PriorityTask {
             return 600;
         }
 
+        if(config.useMouse()) {
+            ctx.getMouse().move(depositBox.raw());
+        }
+        plugin.setDepositBox(depositBox);
         depositBox.interact("Deposit");
         SleepService.sleepWhile(() -> depositBoxService.isClosed(), 10000);
 
-
-        log.info("Evaluating if deposit box is open....");
         if(depositBoxService.isOpen()) {
            depositFish();
             SleepService.sleepFor(RandomService.between(1, 4));
             depositBoxService.close();
-        } else {
-            log.info("Still not open");
         }
         return 600;
     }
 
     private void depositFish() {
-        log.info("Depositing fish...");
+        plugin.setDepositBox(null);
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         List<DepositBoxEntity> fish = ctx.depositBox()
                 .inInventory()
@@ -87,7 +90,9 @@ public class BankDepositBox extends PriorityTask {
                 .list();
 
         for(DepositBoxEntity f : fish) {
-            log.info("Depositing: {}", f.getName());
+            if(config.useMouse()) {
+                ctx.getMouse().move(f.raw());
+            }
             f.depositAll();
         }
     }

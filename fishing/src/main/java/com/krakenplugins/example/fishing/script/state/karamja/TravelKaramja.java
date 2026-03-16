@@ -85,6 +85,8 @@ public class TravelKaramja extends PriorityTask {
             return 600;
         }
 
+        fishingPlugin.setNpc(randomSeaman);
+
         InventoryEntity coins = ctx.inventory().withId(995).first();
         if(coins == null) {
             log.error("No coins found in inventory, cannot travel on boat to Karamja.");
@@ -96,8 +98,12 @@ public class TravelKaramja extends PriorityTask {
             return 3200;
         }
 
+        if(config.useMouse()) {
+            ctx.getMouse().move(randomSeaman.raw());
+        }
         randomSeaman.interact("Travel");
         SleepService.sleepWhile(() -> ctx.players().local().isMoving(), 10000);
+        fishingPlugin.setNpc(null);
         return RandomService.between(1800, 3200);
     }
 

@@ -8,6 +8,7 @@ import com.kraken.api.query.npc.NpcEntity;
 import com.kraken.api.service.util.RandomService;
 import com.kraken.api.service.util.SleepService;
 import com.krakenplugins.example.fishing.FishingConfig;
+import com.krakenplugins.example.fishing.FishingPlugin;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -22,6 +23,13 @@ public class TravelPortSarim extends PriorityTask {
 
     @Inject
     private FishingConfig config;
+
+    @Inject
+    private FishingPlugin plugin;
+
+    // TODO Fix NPE in path
+    // Add mouse movement to actions
+    // Highlight key objects NPC's
 
     @Override
     public int getPriority() {
@@ -48,6 +56,9 @@ public class TravelPortSarim extends PriorityTask {
             return 600;
         }
 
+        plugin.setNpc(customsOfficer);
+
+        plugin.getCurrentPath().clear();
         InventoryEntity coins = ctx.inventory().withId(995).first();
         if(coins == null) {
             log.error("No coins found in inventory, cannot travel on boat to Port Sarim.");
@@ -59,8 +70,12 @@ public class TravelPortSarim extends PriorityTask {
             return 3200;
         }
 
+        if(config.useMouse()) {
+            ctx.getMouse().move(customsOfficer.raw());
+        }
         customsOfficer.interact("Travel");
         SleepService.sleepWhile(() -> ctx.players().local().isMoving(), 10000);
+        plugin.setNpc(null);
         return RandomService.between(1800, 3200);
     }
 

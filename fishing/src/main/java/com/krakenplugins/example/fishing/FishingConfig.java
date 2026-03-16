@@ -169,10 +169,33 @@ public interface FishingConfig extends Config {
 	}
 
 	@ConfigItem(
+			keyName = "highlightBankDepositBox",
+			name = "Highlight Deposit Box",
+			description = "Highlights the selected bank deposit box.",
+			position = 2,
+			section = overlay
+	)
+	default boolean highlightDepositBox() {
+		return false;
+	}
+
+
+	@ConfigItem(
+			keyName = "highlightNpcs",
+			name = "Highlight Npcs",
+			description = "Highlights any NPC being chosen to interact with (i.e. Customs officer & Seamen for Karamja).",
+			position = 2,
+			section = overlay
+	)
+	default boolean highlightNpcs() {
+		return false;
+	}
+
+	@ConfigItem(
 			keyName = "highlightCurrentPath",
 			name = "Highlight Path",
 			description = "Highlights the current path the player will traverse.",
-			position = 2,
+			position = 3,
 			section = overlay
 	)
 	default boolean highlightCurrentPath() {

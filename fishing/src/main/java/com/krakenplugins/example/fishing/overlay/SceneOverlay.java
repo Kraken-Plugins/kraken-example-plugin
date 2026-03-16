@@ -49,6 +49,14 @@ public class SceneOverlay extends Overlay {
             renderTargetSpot();
         }
 
+        if(config.highlightDepositBox()) {
+            renderDepositBox();
+        }
+
+        if(config.highlightNpcs()) {
+            renderNpc();
+        }
+
         if(config.debug()) {
             renderNearbySpots(graphics);
         }
@@ -63,6 +71,18 @@ public class SceneOverlay extends Overlay {
     private void renderTargetSpot() {
         if(plugin.getTargetSpot() != null && plugin.getTargetSpot().raw() != null) {
             modelOutlineRenderer.drawOutline(plugin.getTargetSpot().raw(), 2, Color.GREEN, 2);
+        }
+    }
+
+    private void renderDepositBox() {
+        if(plugin.getDepositBox() != null && plugin.getDepositBox().raw() != null) {
+            modelOutlineRenderer.drawOutline(plugin.getDepositBox().raw(), 2, Color.GREEN, 2);
+        }
+    }
+
+    private void renderNpc() {
+        if(plugin.getNpc() != null && plugin.getNpc().raw() != null) {
+            modelOutlineRenderer.drawOutline(plugin.getNpc().raw(), 2, Color.GREEN, 2);
         }
     }
 

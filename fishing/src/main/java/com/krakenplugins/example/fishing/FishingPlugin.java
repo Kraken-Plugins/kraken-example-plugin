@@ -8,6 +8,7 @@ import com.kraken.api.input.mouse.VirtualMouse;
 import com.kraken.api.input.mouse.strategy.MouseMovementStrategy;
 import com.kraken.api.input.mouse.strategy.linear.LinearStrategy;
 import com.kraken.api.overlay.MouseOverlay;
+import com.kraken.api.query.gameobject.GameObjectEntity;
 import com.kraken.api.query.npc.NpcEntity;
 import com.krakenplugins.example.fishing.overlay.SceneOverlay;
 import com.krakenplugins.example.fishing.overlay.ScriptOverlay;
@@ -70,6 +71,14 @@ public class FishingPlugin extends Plugin {
     @Getter
     @Setter
     private NpcEntity targetSpot;
+
+    @Getter
+    @Setter
+    private GameObjectEntity depositBox;
+
+    @Getter
+    @Setter
+    private NpcEntity npc;
 
     @Getter
     private int fishCaught;
