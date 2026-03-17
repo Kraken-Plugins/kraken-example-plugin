@@ -1,5 +1,6 @@
 package com.krakenplugins.example.fishing;
 
+import ch.qos.logback.classic.Logger;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -8,11 +9,10 @@ import com.kraken.api.input.mouse.VirtualMouse;
 import com.kraken.api.input.mouse.strategy.MouseMovementStrategy;
 import com.kraken.api.input.mouse.strategy.linear.LinearStrategy;
 import com.kraken.api.overlay.MouseOverlay;
+import com.kraken.api.overlay.log.PluginLogger;
 import com.kraken.api.query.gameobject.GameObjectEntity;
 import com.kraken.api.query.npc.NpcEntity;
-import com.krakenplugins.example.fishing.overlay.OverlayAppender;
 import com.krakenplugins.example.fishing.overlay.SceneOverlay;
-import com.krakenplugins.example.fishing.overlay.ScriptLogger;
 import com.krakenplugins.example.fishing.overlay.ScriptOverlay;
 import com.krakenplugins.example.fishing.script.FishingScript;
 import lombok.Getter;
@@ -28,7 +28,6 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import ch.qos.logback.classic.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -96,12 +95,8 @@ public class FishingPlugin extends Plugin {
     @Getter
     private final List<WorldPoint> currentPath = new ArrayList<>();
 
-
-    @Inject
-    private ScriptLogger scriptLogger;
-
-    @Inject
-    private OverlayAppender overlayAppender;
+    @Inject private
+    PluginLogger pluginLogger;
 
     @Provides
     FishingConfig provideConfig(final ConfigManager configManager) {
@@ -112,10 +107,7 @@ public class FishingPlugin extends Plugin {
     protected void startUp() {
         ctx.initializePackets();
         fishingScript.setTasksForLocation(config.fishingLocation());
-
-        scriptLogger.clear();
-        overlayAppender.start();
-        getPluginLogger().addAppender(overlayAppender);
+        pluginLogger.attach(PLUGIN_PACKAGE);
 
         fishingScript.start();
         overlayManager.add(scriptOverlay);
@@ -125,9 +117,8 @@ public class FishingPlugin extends Plugin {
 
     @Override
     protected void shutDown() {
-        Logger pluginLogger = (Logger) LoggerFactory.getLogger(PLUGIN_PACKAGE);
-        pluginLogger.detachAppender(overlayAppender);
-        overlayAppender.stop();
+        pluginLogger.detach();
+
         fishingScript.stop();
         overlayManager.remove(scriptOverlay);
         overlayManager.remove(mouseTrackerOverlay);

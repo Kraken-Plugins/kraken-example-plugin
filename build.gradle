@@ -9,7 +9,7 @@ plugins {
 }
 
 def runeLiteVersion = '1.12.20' // latest.release
-def krakenApiVersion = '2.3.1'
+def krakenApiVersion = '2.3.2'
 
 allprojects {
     apply plugin: 'java'
