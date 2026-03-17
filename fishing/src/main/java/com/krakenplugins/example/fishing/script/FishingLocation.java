@@ -11,6 +11,7 @@ import java.util.List;
 public enum FishingLocation {
     DRAYNOR_VILLAGE(new WorldPoint(3088, 3228, 0), 1525, List.of(317, 321, 7954, 323)),
     KARAMJA(new WorldPoint(2924, 3179, 0), 1522, List.of(359, 371, 377)),
+    CORSAIR_COVE(new WorldPoint(2456, 2892, 0), 7946, List.of(359, 371, 377)),
     BARBARIAN_VILLAGE(new WorldPoint(3104, 3430, 0), 1526, List.of(331, 329, 333, 335, 343));
 
     private final WorldPoint location;

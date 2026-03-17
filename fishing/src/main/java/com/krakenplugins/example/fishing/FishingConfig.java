@@ -142,11 +142,40 @@ public interface FishingConfig extends Config {
 	@ConfigItem(
 			keyName = "bankFishKaramja",
 			name = "Bank Fish",
-			description = "Automatically uses the Karamja charter ship to bank fish in Port Sarim. This will be overriden if Drop fish is checked.",
+			description = "Automatically uses the Karamja charter ship to bank fish in Port Sarim. This will be overridden if Drop fish is checked.",
 			position = 2,
 			section = karamjaFishing
 	)
 	default boolean bankFishKaramja() {
+		return false;
+	}
+
+	@ConfigSection(
+			name = "Corsair Cove Fishing Settings",
+			description = "General options for configuring fishing when at the Corsair cove resource area.",
+			position = 4
+	)
+	String corsairCove = "corsairCove";
+
+	@ConfigItem(
+			keyName = "fishingMethodCorsair",
+			name = "Fishing Method",
+			description = "Choose to fish lobsters via caging or Tuna/Swordfish via Harpooning.",
+			position = 1,
+			section = corsairCove
+	)
+	default FishingMethod fishingMethodCorsair() {
+		return FishingMethod.CAGE;
+	}
+
+	@ConfigItem(
+			keyName = "bankFishCorsair",
+			name = "Bank Fish",
+			description = "Automatically walks to the bank to deposit fish from the Corsair resource area. This will be overridden if Drop fish is checked.",
+			position = 2,
+			section = corsairCove
+	)
+	default boolean bankFishCorsair() {
 		return false;
 	}
 

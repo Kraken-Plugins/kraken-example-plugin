@@ -9,6 +9,10 @@ import com.krakenplugins.example.fishing.FishingConfig;
 import com.krakenplugins.example.fishing.script.state.*;
 import com.krakenplugins.example.fishing.script.state.barbarian.CookFish;
 import com.krakenplugins.example.fishing.script.state.barbarian.FishBarbarianVillage;
+import com.krakenplugins.example.fishing.script.state.corsair.BankCorsairCove;
+import com.krakenplugins.example.fishing.script.state.corsair.FishCorsair;
+import com.krakenplugins.example.fishing.script.state.corsair.WalkToCorsairBank;
+import com.krakenplugins.example.fishing.script.state.corsair.WalkToResourceArea;
 import com.krakenplugins.example.fishing.script.state.karamja.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +37,11 @@ public class FishingScript extends Script {
     private final BankDepositBox bankDepositBox;
     private final TravelKaramja travelKaramja;
     private final WalkToMusaPoint walkToMusaPoint;
+    private final BankCorsairCove bankCorsairCove;
+    private final FishCorsair fishCorsair;
+    private final WalkToCorsairBank walkToCorsairBank;
+    private final WalkToResourceArea walkToResourceArea;
+
 
     @Getter
     private String status = "Initializing";
@@ -40,7 +49,8 @@ public class FishingScript extends Script {
     @Inject
     public FishingScript(final FishingConfig config, final DropFish dropFish, final FishKaramja fishKaramja, final FishBarbarianVillage fishBarbarianVillage,
                          final FishDraynor fishDraynor, final CookFish cookFish, final WalkToDocks walkToDocks, final TravelPortSarim travelPortSarim,
-                         final BankDepositBox bankDepositBox, final TravelKaramja travelKaramja, final WalkToMusaPoint walkToMusaPoint) {
+                         final BankDepositBox bankDepositBox, final TravelKaramja travelKaramja, final WalkToMusaPoint walkToMusaPoint,
+                         final BankCorsairCove bankCorsairCove, final FishCorsair fishCorsair, final WalkToCorsairBank walkToCorsairBank, final WalkToResourceArea walkToResourceArea) {
         this.config = config;
         this.dropFish = dropFish;
         this.fishKaramja = fishKaramja;
@@ -52,6 +62,10 @@ public class FishingScript extends Script {
         this.bankDepositBox = bankDepositBox;
         this.travelKaramja = travelKaramja;
         this.walkToMusaPoint = walkToMusaPoint;
+        this.bankCorsairCove = bankCorsairCove;
+        this.fishCorsair = fishCorsair;
+        this.walkToCorsairBank = walkToCorsairBank;
+        this.walkToResourceArea = walkToResourceArea;
     }
 
     public void setTasksForLocation(FishingLocation location) {
@@ -75,6 +89,12 @@ public class FishingScript extends Script {
                 tasks.add(bankDepositBox);
                 tasks.add(travelKaramja);
                 tasks.add(walkToMusaPoint);
+                break;
+            case CORSAIR_COVE:
+                tasks.add(fishCorsair);
+                tasks.add(walkToCorsairBank);
+                tasks.add(walkToResourceArea);
+                tasks.add(bankCorsairCove);
                 break;
             case BARBARIAN_VILLAGE:
                 // Safe to always add cook fish task regardless of user config since the activate() method checks
