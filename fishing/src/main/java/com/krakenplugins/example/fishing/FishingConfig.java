@@ -179,7 +179,6 @@ public interface FishingConfig extends Config {
 		return false;
 	}
 
-
 	@ConfigItem(
 			keyName = "highlightNpcs",
 			name = "Highlight Npcs",
@@ -202,12 +201,22 @@ public interface FishingConfig extends Config {
 		return false;
 	}
 
+	@ConfigItem(
+			keyName = "showLog",
+			name = "Show Log",
+			description = "Show log information from the script in the overlay.",
+			position = 4,
+			section = overlay
+	)
+	default boolean showLog() {
+		return false;
+	}
 
 	@ConfigItem(
 			keyName = "debug",
 			name = "Debug",
 			description = "Show debug information and overlays.",
-			position = 4,
+			position = 5,
 			section = overlay
 	)
 	default boolean debug() {

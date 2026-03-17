@@ -69,6 +69,8 @@ public class TravelPortSarim extends PriorityTask {
         if(config.useMouse()) {
             ctx.getMouse().move(customsOfficer.raw());
         }
+
+        log.info("Traveling via customs officer");
         customsOfficer.interact("Travel");
         SleepService.sleepWhile(() -> ctx.players().local().isMoving(), 10000);
         plugin.setNpc(null);

@@ -68,12 +68,14 @@ public class BankDepositBox extends PriorityTask {
         if(config.useMouse()) {
             ctx.getMouse().move(depositBox.raw());
         }
+
+        log.info("Interacting with bank deposit box");
         plugin.setDepositBox(depositBox);
         depositBox.interact("Deposit");
         SleepService.sleepWhile(() -> depositBoxService.isClosed(), 10000);
 
         if(depositBoxService.isOpen()) {
-           depositFish();
+            depositFish();
             SleepService.sleepFor(RandomService.between(1, 4));
             depositBoxService.close();
         }
@@ -81,6 +83,7 @@ public class BankDepositBox extends PriorityTask {
     }
 
     private void depositFish() {
+        log.info("Depositing fish from inventory...");
         plugin.setDepositBox(null);
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         List<DepositBoxEntity> fish = ctx.depositBox()

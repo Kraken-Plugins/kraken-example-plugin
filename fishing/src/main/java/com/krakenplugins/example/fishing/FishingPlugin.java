@@ -10,7 +10,9 @@ import com.kraken.api.input.mouse.strategy.linear.LinearStrategy;
 import com.kraken.api.overlay.MouseOverlay;
 import com.kraken.api.query.gameobject.GameObjectEntity;
 import com.kraken.api.query.npc.NpcEntity;
+import com.krakenplugins.example.fishing.overlay.OverlayAppender;
 import com.krakenplugins.example.fishing.overlay.SceneOverlay;
+import com.krakenplugins.example.fishing.overlay.ScriptLogger;
 import com.krakenplugins.example.fishing.overlay.ScriptOverlay;
 import com.krakenplugins.example.fishing.script.FishingScript;
 import lombok.Getter;
@@ -26,6 +28,8 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import ch.qos.logback.classic.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +44,8 @@ import java.util.concurrent.TimeUnit;
         tags = {"example", "automation", "kraken", "fishing"}
 )
 public class FishingPlugin extends Plugin {
+
+    private static final String PLUGIN_PACKAGE = "com.krakenplugins.example.fishing";
 
     @Inject
     private FishingScript fishingScript;
@@ -90,6 +96,13 @@ public class FishingPlugin extends Plugin {
     @Getter
     private final List<WorldPoint> currentPath = new ArrayList<>();
 
+
+    @Inject
+    private ScriptLogger scriptLogger;
+
+    @Inject
+    private OverlayAppender overlayAppender;
+
     @Provides
     FishingConfig provideConfig(final ConfigManager configManager) {
         return configManager.getConfig(FishingConfig.class);
@@ -99,6 +112,11 @@ public class FishingPlugin extends Plugin {
     protected void startUp() {
         ctx.initializePackets();
         fishingScript.setTasksForLocation(config.fishingLocation());
+
+        scriptLogger.clear();
+        overlayAppender.start();
+        getPluginLogger().addAppender(overlayAppender);
+
         fishingScript.start();
         overlayManager.add(scriptOverlay);
         overlayManager.add(mouseTrackerOverlay);
@@ -107,10 +125,20 @@ public class FishingPlugin extends Plugin {
 
     @Override
     protected void shutDown() {
+        Logger pluginLogger = (Logger) LoggerFactory.getLogger(PLUGIN_PACKAGE);
+        pluginLogger.detachAppender(overlayAppender);
+        overlayAppender.stop();
         fishingScript.stop();
         overlayManager.remove(scriptOverlay);
         overlayManager.remove(mouseTrackerOverlay);
         overlayManager.remove(sceneOverlay);
+    }
+
+    private Logger getPluginLogger() {
+        // Cast is safe — RuneLite's SLF4J binding is always Logback.
+        // Attaching to the package logger means every class under
+        // PLUGIN_PACKAGE shares this appender via logger hierarchy.
+        return (Logger) LoggerFactory.getLogger(PLUGIN_PACKAGE);
     }
 
     @Subscribe

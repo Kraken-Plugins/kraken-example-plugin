@@ -42,14 +42,13 @@ public class FishKaramja extends PriorityTask {
             if (config.useMouse()) {
                 ctx.getMouse().move(spot.raw());
             }
-
+            log.info("Finding new fishing spot...");
             if (spot.interact(config.fishingMethod().getInteractionName())) {
                 SleepService.sleepUntil(
                         () -> ctx.players().local().isMoving()
                                 || ctx.players().local().raw().getAnimation() != -1,
                         5000
                 );
-                plugin.setTargetSpot(null);
             }
         } else {
             plugin.setTargetSpot(null);
