@@ -79,7 +79,7 @@ public class SceneOverlay extends Overlay {
         plugin.getBankLocation().render(client, graphics, outline, true);
 
 
-        LocalPoint localPoint = ctx.players().local().raw().getLocalLocation();
+        LocalPoint localPoint = ctx.players().local().localLocation();
 
         // 49927 foresters
         // 26185 regular
