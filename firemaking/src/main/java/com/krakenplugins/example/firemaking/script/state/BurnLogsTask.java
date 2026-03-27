@@ -89,14 +89,14 @@ public class BurnLogsTask extends AbstractTask {
         }
 
         // If existing fire is present (and close), add logs to it, turning it into a foresters fire
-        if (fire != null && randomLog != null && fire.raw().getWorldLocation().distanceTo(ctx.players().local().raw().getWorldLocation()) < 5) {
+        if (fire != null && randomLog != null && fire.raw().getWorldLocation().distanceTo(ctx.players().local().location()) < 5) {
             startBonfire(fire, randomLog);
             return 600;
         }
 
         // 3. Select a point not in the bank area but within 4 tiles of a random bank tile
         Set<WorldPoint> bankTiles = plugin.getBankLocation().getTiles();
-        WorldPoint myLoc = ctx.players().local().raw().getWorldLocation();
+        WorldPoint myLoc = ctx.players().local().location();
 
         // If we are currently standing IN the bank, we must move out
         if (bankTiles.contains(myLoc)) {

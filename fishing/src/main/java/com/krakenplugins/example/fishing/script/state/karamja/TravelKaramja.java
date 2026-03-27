@@ -65,7 +65,7 @@ public class TravelKaramja extends PriorityTask {
         boolean noSeamenFound = ctx.npcs().filter(n -> seamen.contains(n.getId())).count() == 0;
         if (noSeamenFound) {
             log.info("No seamen found, pathing to travel point...");
-            List<WorldPoint> directPath = localPathfinder.findApproximatePath(ctx.players().local().raw().getWorldLocation(), new WorldPoint(3026, 3218, 0));
+            List<WorldPoint> directPath = localPathfinder.findApproximatePath(ctx.players().local().location(), new WorldPoint(3026, 3218, 0));
 
             if (directPath != null && !directPath.isEmpty()) {
                 log.info("Direct path to Karamja located...");

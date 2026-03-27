@@ -55,7 +55,7 @@ public class WalkToMusaPoint extends PriorityTask {
         boolean hasSpace = !ctx.inventory().isFull();
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         boolean hasNoFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() == 0;
-        boolean playerInKaramja = ctx.players().local().raw().getWorldLocation().distanceTo(KARAMJA_DOCKS) <= 7;
+        boolean playerInKaramja = ctx.players().local().location().distanceTo(KARAMJA_DOCKS) <= 7;
 
         return hasSpace &&
                 hasNoFish &&
@@ -65,7 +65,7 @@ public class WalkToMusaPoint extends PriorityTask {
 
     @Override
     public int execute() {
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(MUSA_POINT) <= 7) {
             isTraversing = false;
             plugin.getCurrentPath().clear(); // arrived, safe to clear

@@ -37,7 +37,7 @@ public class TravelPortSarim extends PriorityTask {
         boolean isFull = ctx.inventory().isFull();
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         boolean hasFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() > 0;
-        boolean atKaramjaDocks = ctx.players().local().raw().getWorldLocation().distanceTo(KARAMJA_DOCKS) <= 7;
+        boolean atKaramjaDocks = ctx.players().local().location().distanceTo(KARAMJA_DOCKS) <= 7;
         return isFull &&
                 hasFish &&
                 atKaramjaDocks &&

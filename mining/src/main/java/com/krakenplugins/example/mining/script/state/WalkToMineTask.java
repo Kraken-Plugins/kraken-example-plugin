@@ -69,7 +69,7 @@ public class WalkToMineTask extends AbstractTask {
         isTraversing = true;
 
         try {
-            List<WorldPoint> stridedPath = pathfinder.randomizeSparsePath(ctx.players().local().raw().getWorldLocation(), path, 2, 5, false);
+            List<WorldPoint> stridedPath = pathfinder.randomizeSparsePath(ctx.players().local().location(), path, 2, 5, false);
             plugin.getCurrentPath().clear();
             plugin.getCurrentPath().addAll(stridedPath);
             movementService.traversePath(ctx.getClient(), stridedPath);

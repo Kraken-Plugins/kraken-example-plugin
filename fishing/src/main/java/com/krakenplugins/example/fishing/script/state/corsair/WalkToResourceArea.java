@@ -55,7 +55,7 @@ public class WalkToResourceArea extends PriorityTask {
         boolean hasSpace = !ctx.inventory().isFull();
         List<Integer> fishIds = config.fishingLocation().getFishIds();
         boolean hasNoFish = ctx.inventory().filter(item -> fishIds.contains(item.getId())).count() == 0;
-        boolean playerInBank = ctx.players().local().raw().getWorldLocation().distanceTo(CORSAIR_COVE_BANK) <= 7;
+        boolean playerInBank = ctx.players().local().location().distanceTo(CORSAIR_COVE_BANK) <= 7;
 
         return hasSpace &&
                 hasNoFish &&
@@ -65,7 +65,7 @@ public class WalkToResourceArea extends PriorityTask {
 
     @Override
     public int execute() {
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(RESOURCE_AREA) <= 7) {
             isTraversing = false;
             plugin.getCurrentPath().clear(); // arrived, safe to clear

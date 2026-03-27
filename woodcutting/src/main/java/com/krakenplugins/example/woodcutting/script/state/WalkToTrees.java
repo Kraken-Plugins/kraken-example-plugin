@@ -37,7 +37,7 @@ public class WalkToTrees extends AbstractTask  {
 
     @Override
     public int execute() {
-        List<WorldPoint> path = pathfinder.findApproximatePath(ctx.players().local().raw().getWorldLocation(), TREE_LOCATION);
+        List<WorldPoint> path = pathfinder.findApproximatePath(ctx.players().local().location(), TREE_LOCATION);
 
         if(path == null || path.isEmpty()) {
             return 1200;
