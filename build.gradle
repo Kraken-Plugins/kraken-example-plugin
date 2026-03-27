@@ -8,8 +8,8 @@ plugins {
     id 'java'
 }
 
-def runeLiteVersion = '1.12.20' // latest.release
-def krakenApiVersion = '2.3.2'
+def runeLiteVersion = '1.12.22' // latest.release
+def krakenApiVersion = '2.3.6'
 
 allprojects {
     apply plugin: 'java'

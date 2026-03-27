@@ -41,7 +41,7 @@ public class FollowPathTask extends AbstractTask {
             ctx.players().local().toggleRun();
         }
 
-        WorldPoint playerLocation = ctx.players().local().raw().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
 
         // Stuck detection logic
         if (lastPosition != null && lastPosition.distanceTo(playerLocation) == 0) {
