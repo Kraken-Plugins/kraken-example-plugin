@@ -62,7 +62,7 @@ public class WalkToBankTask extends AbstractTask {
     @Override
     public int execute() {
         plugin.setTargetRock(null);
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(BANK_LOCATION) <= 2) {
             log.info("Arrived at bank");
             isTraversing = false;

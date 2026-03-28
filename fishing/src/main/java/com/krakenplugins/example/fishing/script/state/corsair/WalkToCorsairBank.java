@@ -67,7 +67,7 @@ public class WalkToCorsairBank extends PriorityTask {
 
     @Override
     public int execute() {
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(CORSAIR_COVE_BANK) <= 7) {
             isTraversing = false;
             plugin.getCurrentPath().clear(); // arrived, safe to clear

@@ -67,7 +67,7 @@ public class WalkToDocks extends PriorityTask {
 
     @Override
     public int execute() {
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(KARAMJA_DOCKS) <= 7) {
             isTraversing = false;
             plugin.getCurrentPath().clear(); // arrived, safe to clear

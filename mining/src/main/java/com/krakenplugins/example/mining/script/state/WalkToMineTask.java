@@ -59,7 +59,7 @@ public class WalkToMineTask extends AbstractTask {
 
     @Override
     public int execute() {
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(MINE_LOCATION) <= 4) {
             log.info("Arrived at mine");
             isTraversing = false;

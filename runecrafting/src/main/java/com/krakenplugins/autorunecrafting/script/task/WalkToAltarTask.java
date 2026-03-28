@@ -58,7 +58,7 @@ public class WalkToAltarTask extends AbstractTask {
         plugin.setTargetBankBooth(null);
         bankService.close();
 
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(AIR_ALTAR) <= 7) {
             isTraversing = false;
             return 1000;

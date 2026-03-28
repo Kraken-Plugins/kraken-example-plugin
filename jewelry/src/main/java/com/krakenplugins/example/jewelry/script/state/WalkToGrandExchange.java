@@ -65,7 +65,7 @@ public class WalkToGrandExchange extends AbstractTask {
             ctx.players().local().toggleRun();
         }
 
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(GRAND_EXCHANGE) <= 5) {
             log.info("Arrived at Grand Exchange.");
             isTraversing = false;

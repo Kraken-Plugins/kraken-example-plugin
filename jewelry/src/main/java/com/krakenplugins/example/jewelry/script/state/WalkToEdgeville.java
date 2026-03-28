@@ -56,7 +56,7 @@ public class WalkToEdgeville extends AbstractTask {
                 ctx.players().local().toggleRun();
             }
 
-            WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+            WorldPoint playerLocation = ctx.players().local().location();
 
             currentPath = pathfinder.findApproximatePath(playerLocation, EDGEVILLE_BANK);
 

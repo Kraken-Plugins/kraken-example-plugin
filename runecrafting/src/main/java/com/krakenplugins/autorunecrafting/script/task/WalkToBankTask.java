@@ -57,7 +57,7 @@ public class WalkToBankTask extends AbstractTask {
 
     @Override
     public int execute() {
-        WorldPoint playerLocation = ctx.getClient().getLocalPlayer().getWorldLocation();
+        WorldPoint playerLocation = ctx.players().local().location();
         if (playerLocation.distanceTo(FALADOR_BANK) <= 2) {
             log.info("Arrived at Bank.");
             isTraversing = false;
