@@ -135,7 +135,7 @@ public class BurnLogsTask extends AbstractTask {
         log.useOn(fire.raw());
 
         SleepService.sleepUntil(() -> processingService.isOpen(), RandomService.between(4000, 6000));
-        processingService.process(config.logName());
+        processingService.process("Burn", config.logName());
         plugin.setLastFiremakingXpDropTick(ctx.getClient().getTickCount() + 5); // Buffer so this doesn't continually execute
     }
 

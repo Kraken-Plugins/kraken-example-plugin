@@ -74,7 +74,7 @@ public class CookFish extends PriorityTask {
                 processingService.setAmount(28);
             }
 
-            ctx.runOnClientThread(() -> processingService.process(333));
+            ctx.runOnClientThread(() -> processingService.process("Cook", 333));
 
             // After we click confirm, there is a delay before the player starts animating (897).
             // If we don't sleep here, the script loops, sees the player is "Idle" (not yet animating),
