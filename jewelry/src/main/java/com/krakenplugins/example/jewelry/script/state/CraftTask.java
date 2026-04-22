@@ -61,9 +61,9 @@ public class CraftTask extends AbstractTask {
                 if(config.useMouse()) {
                     ctx.getMouse().move(widget.raw());
                 }
-
-                log.info("Crafting: {}", String.format("make %s", config.jewelry().getNecklaceName()));
-                widget.interact(String.format("make %s", config.jewelry().getNecklaceName()));
+                
+                log.info("Crafting: {}", String.format("make %s", config.jewelry().getFormattedName()));
+                widget.interact(String.format("Make %s", config.jewelry().getFormattedName()));
             }
 
             // Wait for animation to actually start before looping

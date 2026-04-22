@@ -42,9 +42,15 @@ public class JewelryScript extends Script {
     @Override
     public int loop() {
         for (Task task : tasks) {
-            if (task.validate()) {
-                status = task.status();
-                return task.execute();
+            String taskName = task.getClass().getSimpleName();
+            try {
+                boolean isValid = task.validate();
+                if (isValid) {
+                    status = task.status();
+                    return task.execute();
+                }
+            } catch (Throwable e) {
+                log.error("Exception thrown while validating/executing task: {}", taskName, e);
             }
         }
         return 0;

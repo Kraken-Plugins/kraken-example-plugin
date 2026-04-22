@@ -3,7 +3,7 @@ package com.krakenplugins.example.jewelry.script.state;
 import com.google.inject.Inject;
 import com.kraken.api.core.script.AbstractTask;
 import com.kraken.api.service.movement.MovementService;
-import com.kraken.api.service.pathfinding.LocalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinder;
 import com.kraken.api.service.util.RandomService;
 import com.krakenplugins.example.jewelry.JewelryConfig;
 import com.krakenplugins.example.jewelry.JewelryPlugin;
@@ -20,7 +20,7 @@ public class WalkToEdgeville extends AbstractTask {
     private static final WorldPoint EDGEVILLE_BANK = new WorldPoint(3096, 3496, 0);
 
     @Inject
-    private LocalPathfinder pathfinder;
+    private GlobalPathfinder pathfinder;
 
     @Inject
     private MovementService movementService;
@@ -49,7 +49,6 @@ public class WalkToEdgeville extends AbstractTask {
     public int execute() {
         try {
             isTraversing = true;
-
             int randomRun = RandomService.between(config.runEnergyThresholdMin(), config.runEnergyThresholdMax());
             if(ctx.players().local().currentRunEnergy() >= randomRun && !ctx.players().local().isRunEnabled()) {
                 log.info("Toggling run on, met threshold: {} between min={} max={}", randomRun, config.runEnergyThresholdMin(), config.runEnergyThresholdMax());
@@ -57,8 +56,7 @@ public class WalkToEdgeville extends AbstractTask {
             }
 
             WorldPoint playerLocation = ctx.players().local().location();
-
-            currentPath = pathfinder.findApproximatePath(playerLocation, EDGEVILLE_BANK);
+            currentPath = pathfinder.findPath(playerLocation, EDGEVILLE_BANK);
 
             if (currentPath == null || currentPath.isEmpty()) {
                 log.error("Failed to generate any path to Edgeville");
@@ -78,8 +76,6 @@ public class WalkToEdgeville extends AbstractTask {
 
             if (success) {
                 log.info("Successfully reached Edgeville");
-            } else {
-                log.warn("Failed to complete path to Edgeville");
             }
 
             isTraversing = false;

@@ -5,7 +5,8 @@ import com.google.inject.Singleton;
 import com.kraken.api.core.script.AbstractTask;
 import com.kraken.api.service.bank.BankService;
 import com.kraken.api.service.movement.MovementService;
-import com.kraken.api.service.pathfinding.LocalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinderConfig;
 import com.kraken.api.service.util.RandomService;
 import com.krakenplugins.example.jewelry.JewelryConfig;
 import com.krakenplugins.example.jewelry.JewelryPlugin;
@@ -32,7 +33,7 @@ public class WalkToGrandExchange extends AbstractTask {
     private JewelryConfig config;
 
     @Inject
-    private LocalPathfinder pathfinder;
+    private GlobalPathfinder pathfinder;
 
     @Inject
     private MovementService movementService;
@@ -77,41 +78,21 @@ public class WalkToGrandExchange extends AbstractTask {
         try {
             // Try to find a DIRECT path to the real destination
             // We do not use backoff here. We want to know if the "Good" path is valid.
-            List<WorldPoint> directPath = pathfinder.findPath(playerLocation, GRAND_EXCHANGE);
+            List<WorldPoint> directPath = pathfinder.findPath(playerLocation, GRAND_EXCHANGE, GlobalPathfinderConfig.builder().useTeleportationSpells(false).build());
 
             if (directPath != null && !directPath.isEmpty()) {
                 // We have a valid path to the GE!
                 // We can fully commit to this path.
-                log.info("Direct path found. Committing fully.");
                 List<WorldPoint> stridedPath = movementService.applyVariableStride(directPath);
 
                 plugin.getCurrentPath().clear();
                 plugin.getCurrentPath().addAll(stridedPath);
 
                 movementService.traversePath(ctx.getClient(), stridedPath);
-
-
                 // This handles the entire path to GE destination in one execution so
                 // its safe to set is traversing to false and release the latch
                 isTraversing = false;
                 return 600;
-            }
-
-            // Direct path failed, use BACKOFF
-            log.info("Direct path failed. Attempting backoff...");
-            List<WorldPoint> backoffPath = pathfinder.findPathWithBackoff(playerLocation, GRAND_EXCHANGE);
-
-            if (backoffPath != null && !backoffPath.isEmpty()) {
-                // CASE B: We only have a sub-optimal path.
-                // We do NOT want to walk the whole thing, because a direct path might open up
-                // halfway through.
-                List<WorldPoint> stridedPath = movementService.applyVariableStride(backoffPath);
-
-                plugin.getCurrentPath().clear();
-                plugin.getCurrentPath().addAll(stridedPath);
-
-                movementService.traversePath(ctx.getClient(), stridedPath);
-                return 0;
             }
 
             log.error("Failed to generate any path (Direct or Backoff)");

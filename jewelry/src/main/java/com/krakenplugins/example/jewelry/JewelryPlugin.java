@@ -181,11 +181,11 @@ public class JewelryPlugin extends Plugin {
     @Subscribe
     private void onStatChanged(StatChanged e) {
         if(e.getSkill() == Skill.CRAFTING) {
-            log.info("Necklace crafted");
             metrics.setNecklacesCrafted(metrics.getNecklacesCrafted() + 1);
             updateEstimatedProfitAsync();
         }
     }
+
     /**
      * Fetches prices for all 3 components in parallel, calculates profit,
      * and updates the metrics object safely.
