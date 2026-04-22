@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.kraken.api.core.script.AbstractTask;
 import com.kraken.api.service.movement.MovementService;
 import com.kraken.api.service.pathfinding.GlobalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinderConfig;
 import com.kraken.api.service.util.RandomService;
 import com.krakenplugins.example.jewelry.JewelryConfig;
 import com.krakenplugins.example.jewelry.JewelryPlugin;
@@ -56,7 +57,10 @@ public class WalkToEdgeville extends AbstractTask {
             }
 
             WorldPoint playerLocation = ctx.players().local().location();
-            currentPath = pathfinder.findPath(playerLocation, EDGEVILLE_BANK);
+            currentPath = pathfinder.findPath(playerLocation, EDGEVILLE_BANK, GlobalPathfinderConfig.builder()
+                    .useTeleportationSpells(false)
+                    .useAgilityShortcuts(false)
+                    .build());
 
             if (currentPath == null || currentPath.isEmpty()) {
                 log.error("Failed to generate any path to Edgeville");

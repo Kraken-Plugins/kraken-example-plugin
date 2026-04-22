@@ -78,7 +78,10 @@ public class WalkToGrandExchange extends AbstractTask {
         try {
             // Try to find a DIRECT path to the real destination
             // We do not use backoff here. We want to know if the "Good" path is valid.
-            List<WorldPoint> directPath = pathfinder.findPath(playerLocation, GRAND_EXCHANGE, GlobalPathfinderConfig.builder().useTeleportationSpells(false).build());
+            List<WorldPoint> directPath = pathfinder.findPath(playerLocation, GRAND_EXCHANGE, GlobalPathfinderConfig.builder()
+                    .useTeleportationSpells(false)
+                    .useAgilityShortcuts(false)
+                    .build());
 
             if (directPath != null && !directPath.isEmpty()) {
                 // We have a valid path to the GE!
