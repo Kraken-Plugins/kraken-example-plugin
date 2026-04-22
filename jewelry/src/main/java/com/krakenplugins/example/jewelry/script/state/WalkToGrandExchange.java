@@ -79,6 +79,8 @@ public class WalkToGrandExchange extends AbstractTask {
             // Try to find a DIRECT path to the real destination
             // We do not use backoff here. We want to know if the "Good" path is valid.
             List<WorldPoint> directPath = pathfinder.findPath(playerLocation, GRAND_EXCHANGE, GlobalPathfinderConfig.builder()
+                            .useMinecarts(false)
+                    .useTeleportationLevers(false)
                     .useTeleportationSpells(false)
                     .useAgilityShortcuts(false)
                     .build());
@@ -87,10 +89,6 @@ public class WalkToGrandExchange extends AbstractTask {
                 // We have a valid path to the GE!
                 // We can fully commit to this path.
                 List<WorldPoint> stridedPath = movementService.applyVariableStride(directPath);
-
-                plugin.getCurrentPath().clear();
-                plugin.getCurrentPath().addAll(stridedPath);
-
                 movementService.traversePath(ctx.getClient(), stridedPath);
                 // This handles the entire path to GE destination in one execution so
                 // its safe to set is traversing to false and release the latch

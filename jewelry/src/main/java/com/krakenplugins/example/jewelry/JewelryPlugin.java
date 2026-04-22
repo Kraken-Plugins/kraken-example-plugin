@@ -7,6 +7,7 @@ import com.kraken.api.Context;
 import com.kraken.api.input.mouse.VirtualMouse;
 import com.kraken.api.input.mouse.strategy.MouseMovementStrategy;
 import com.kraken.api.input.mouse.strategy.linear.LinearStrategy;
+import com.kraken.api.overlay.GlobalPathfinderOverlay;
 import com.kraken.api.overlay.MouseOverlay;
 import com.kraken.api.query.gameobject.GameObjectEntity;
 import com.kraken.api.service.tile.AreaService;
@@ -34,9 +35,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -81,6 +80,9 @@ public class JewelryPlugin extends Plugin {
     @Inject
     private ItemPriceService itemPriceService;
 
+    @Inject
+    private GlobalPathfinderOverlay globalPathfinderOverlay;
+
     @Getter
     @Setter
     private GameObjectEntity targetBankBooth;
@@ -93,9 +95,6 @@ public class JewelryPlugin extends Plugin {
 
     @Getter
     private GameArea grandExchange;
-
-    @Getter
-    private final List<WorldPoint> currentPath = new ArrayList<>();
 
     private final long startTime = System.currentTimeMillis();
 
@@ -110,6 +109,10 @@ public class JewelryPlugin extends Plugin {
     @Override
     protected void startUp() {
         ctx.initializePackets();
+
+        if (config.showCurrentPath()) {
+            overlayManager.add(globalPathfinderOverlay);
+        }
 
         WorldPoint[] furnace = {
                 new WorldPoint(3105, 3502, 0),
@@ -172,6 +175,14 @@ public class JewelryPlugin extends Plugin {
                 if(config.mouseMovementStrategy() == MouseMovementStrategy.LINEAR) {
                     LinearStrategy linear = (LinearStrategy) MouseMovementStrategy.LINEAR.getStrategy();
                     linear.setSteps(config.linearSteps());
+                }
+            }
+
+            if (key.equalsIgnoreCase("showCurrentPath")) {
+                if (config.showCurrentPath()) {
+                    overlayManager.add(globalPathfinderOverlay);
+                } else {
+                    overlayManager.remove(globalPathfinderOverlay);
                 }
             }
 

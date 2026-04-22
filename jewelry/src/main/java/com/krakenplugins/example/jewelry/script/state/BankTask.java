@@ -43,7 +43,6 @@ public class BankTask extends AbstractTask {
     @Override
     public int execute() {
         purchaseSuppliesTask.setPurchaseComplete(false);
-        plugin.getCurrentPath().clear();
         List<BankInventoryEntity> necklaces = ctx.bankInventory().withName(config.jewelry().getNecklaceName()).stream().limit(5).collect(Collectors.toList());
         BankInventoryEntity necklace = null;
 

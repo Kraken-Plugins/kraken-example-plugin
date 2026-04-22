@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.kraken.api.Context;
 import com.kraken.api.query.gameobject.GameObjectEntity;
-import com.kraken.api.service.pathfinding.LocalPathfinder;
 import com.krakenplugins.example.jewelry.JewelryConfig;
 import com.krakenplugins.example.jewelry.JewelryPlugin;
 import net.runelite.api.Client;
@@ -23,15 +22,13 @@ public class SceneOverlay extends Overlay {
     private final Context ctx;
     private final JewelryConfig config;
     private final ModelOutlineRenderer modelOutlineRenderer;
-    private final LocalPathfinder localPathfinder;
 
     @Inject
-    public SceneOverlay(Client client, Context ctx, JewelryPlugin plugin, JewelryConfig config, ModelOutlineRenderer modelOutlineRenderer, LocalPathfinder localPathfinder) {
+    public SceneOverlay(Client client, Context ctx, JewelryPlugin plugin, JewelryConfig config, ModelOutlineRenderer modelOutlineRenderer) {
         this.client = client;
         this.plugin = plugin;
         this.ctx = ctx;
         this.config = config;
-        this.localPathfinder = localPathfinder;
         this.modelOutlineRenderer = modelOutlineRenderer;
 
         this.setPosition(OverlayPosition.DYNAMIC);
@@ -46,10 +43,6 @@ public class SceneOverlay extends Overlay {
 
         if(config.debug()) {
             renderDebug(graphics);
-        }
-
-        if(config.showCurrentPath()) {
-            localPathfinder.renderPath(plugin.getCurrentPath(), graphics, new Color(248, 35, 84));
         }
 
         if(config.targetBankBooth()) {

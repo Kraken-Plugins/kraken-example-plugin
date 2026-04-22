@@ -58,6 +58,10 @@ public class WalkToEdgeville extends AbstractTask {
 
             WorldPoint playerLocation = ctx.players().local().location();
             currentPath = pathfinder.findPath(playerLocation, EDGEVILLE_BANK, GlobalPathfinderConfig.builder()
+                    .useMinecarts(false)
+                    .avoidWilderness(true)
+                    .useTeleportationLevers(false)
+                    .useTeleportationPortalsPoh(false)
                     .useTeleportationSpells(false)
                     .useAgilityShortcuts(false)
                     .build());
@@ -71,9 +75,6 @@ public class WalkToEdgeville extends AbstractTask {
             // Apply variable stride for more natural movement
             List<WorldPoint> stridedPath = movementService.applyVariableStride(currentPath);
             log.info("Path generated with {} waypoints", stridedPath.size());
-
-            plugin.getCurrentPath().clear();
-            plugin.getCurrentPath().addAll(stridedPath);
 
             // Traverse the path
             boolean success = movementService.traversePath(ctx.getClient(), stridedPath);
