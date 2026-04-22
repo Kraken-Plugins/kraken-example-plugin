@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.kraken.api.core.script.PriorityTask;
 import com.kraken.api.query.npc.NpcEntity;
+import com.kraken.api.service.pathfinding.GlobalPathfinder;
 import com.kraken.api.service.util.RandomService;
 import com.kraken.api.service.util.SleepService;
 import com.krakenplugins.example.fishing.FishingConfig;
@@ -21,6 +22,9 @@ public class FishCorsair extends PriorityTask {
     @Inject
     private FishingConfig config;
 
+    @Inject
+    private GlobalPathfinder pathfinder;
+
     @Override
     public boolean validate() {
         if (!ctx.inventory().hasItem(311) && !ctx.inventory().hasItem(301)) {
@@ -36,7 +40,7 @@ public class FishCorsair extends PriorityTask {
     public int execute() {
         NpcEntity spot = ctx.npcs().withId(FishingLocation.CORSAIR_COVE.getSpotId()).nearest();
         if (spot != null) {
-            plugin.getCurrentPath().clear();
+            pathfinder.clearLastResult();
             plugin.setTargetSpot(spot);
 
             if (config.useMouse()) {

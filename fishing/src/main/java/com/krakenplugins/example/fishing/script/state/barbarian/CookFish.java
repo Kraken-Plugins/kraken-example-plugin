@@ -67,19 +67,34 @@ public class CookFish extends PriorityTask {
             return 600;
         }
 
-        // logic: If the menu is open, we do NOT want to click the fire again.
         if (isProcessingInterfaceOpen()) {
             idleTicks = 0;
             if (processingService.getAmount() != 28) {
+                log.info("Setting amount to 28.");
                 processingService.setAmount(28);
             }
 
-            ctx.runOnClientThread(() -> processingService.process("Cook", 333));
+            // 1. Dynamically determine which fish to process
+            int targetCookId = -1;
+            if (ctx.inventory().hasItem(331)) { // Raw Trout
+                targetCookId = 333; // Cooked Trout
+            } else if (ctx.inventory().hasItem(335)) { // Raw Salmon
+                targetCookId = 329; // Cooked Salmon
+            }
 
-            // After we click confirm, there is a delay before the player starts animating (897).
-            // If we don't sleep here, the script loops, sees the player is "Idle" (not yet animating),
-            // and tries to click the fire again.
-            SleepService.sleepUntil(() -> ctx.players().local().raw().getAnimation() == COOKING_ANIM, 6000);
+            // 2. Process and handle failure cleanly
+            if (targetCookId != -1) {
+                if(!processingService.process("Cook", targetCookId)) {
+                    log.error("Failed to process fish on fire. Target ID: {}", targetCookId);
+                    return 600; // Return immediately to avoid the 6-second sleep trap
+                }
+
+                log.info("{} cook interaction successful", targetCookId);
+                SleepService.sleepUntil(() -> ctx.players().local().raw().getAnimation() == COOKING_ANIM, 6000);
+            } else {
+                log.error("Processing interface open, but no raw trout or salmon found.");
+            }
+
             return 600;
         }
 

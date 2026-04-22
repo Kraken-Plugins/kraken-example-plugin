@@ -5,7 +5,8 @@ import com.google.inject.Singleton;
 import com.kraken.api.core.script.PriorityTask;
 import com.kraken.api.service.movement.MovementService;
 import com.kraken.api.service.movement.VariableStrideConfig;
-import com.kraken.api.service.pathfinding.LocalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinderConfig;
 import com.kraken.api.service.tile.AreaService;
 import com.kraken.api.service.tile.GameArea;
 import com.krakenplugins.example.fishing.FishingConfig;
@@ -23,7 +24,7 @@ public class WalkToCorsairBank extends PriorityTask {
 
     private final FishingConfig config;
     private final GameArea resourceAreaFishingArea;
-    private final LocalPathfinder localPathfinder;
+    private final GlobalPathfinder pathfinder;
     private final MovementService movementService;
     private final FishingPlugin plugin;
 
@@ -34,10 +35,10 @@ public class WalkToCorsairBank extends PriorityTask {
             .build();
 
     @Inject
-    public WalkToCorsairBank(FishingPlugin plugin, AreaService areaService, FishingConfig config, LocalPathfinder localPathfinder, MovementService movementService) {
+    public WalkToCorsairBank(FishingPlugin plugin, AreaService areaService, FishingConfig config, GlobalPathfinder pathfinder, MovementService movementService) {
         this.config = config;
         this.plugin = plugin;
-        this.localPathfinder = localPathfinder;
+        this.pathfinder = pathfinder;
         this.movementService = movementService;
         resourceAreaFishingArea = areaService.createAreaFromRadius(config.fishingLocation().getLocation(), 8);
     }
@@ -77,36 +78,19 @@ public class WalkToCorsairBank extends PriorityTask {
         isTraversing = true;
 
         try {
-            List<WorldPoint> directPath = localPathfinder.findApproximatePath(playerLocation, CORSAIR_COVE_BANK);
+            List<WorldPoint> directPath = pathfinder.findPath(playerLocation, CORSAIR_COVE_BANK,   GlobalPathfinderConfig.builder().useCharterShips(false)
+                    .useBoats(false)
+                    .useSpiritTrees(false)
+                    .build());
 
             if (directPath != null && !directPath.isEmpty()) {
                 log.info("Direct path found to: CORSAIR_COVE_BANK.");
                 List<WorldPoint> stridedPath = movementService.applyVariableStride(directPath, strideConfig);
-
-                // Only clear AFTER we have a valid new path
-                plugin.getCurrentPath().clear();
-                plugin.getCurrentPath().addAll(stridedPath);
-
-                movementService.traversePath(ctx.getClient(), stridedPath);
-
-                // Don't reset isTraversing here — let validate() keep task alive
-                // while player is still walking the stride
-                return 600;
-            }
-
-            List<WorldPoint> backoffPath = localPathfinder.findApproximatePathWithBackoff(playerLocation, CORSAIR_COVE_BANK, 5);
-
-            if (backoffPath != null && !backoffPath.isEmpty()) {
-                List<WorldPoint> stridedPath = movementService.applyVariableStride(backoffPath, strideConfig);
-
-                plugin.getCurrentPath().clear();
-                plugin.getCurrentPath().addAll(stridedPath);
-
                 movementService.traversePath(ctx.getClient(), stridedPath);
                 return 600;
             }
 
-            log.error("Failed to generate any path to Corsair cove bank (Direct or Backoff)");
+            log.error("Failed to generate any path to Corsair cove bank");
             isTraversing = false;
             return 1000;
 

@@ -8,6 +8,7 @@ import com.kraken.api.Context;
 import com.kraken.api.input.mouse.VirtualMouse;
 import com.kraken.api.input.mouse.strategy.MouseMovementStrategy;
 import com.kraken.api.input.mouse.strategy.linear.LinearStrategy;
+import com.kraken.api.overlay.GlobalPathfinderOverlay;
 import com.kraken.api.overlay.MouseOverlay;
 import com.kraken.api.overlay.log.PluginLogger;
 import com.kraken.api.query.gameobject.GameObjectEntity;
@@ -66,6 +67,9 @@ public class FishingPlugin extends Plugin {
     private MouseOverlay mouseTrackerOverlay;
 
     @Inject
+    private GlobalPathfinderOverlay globalPathfinderOverlay;
+
+    @Inject
     private SceneOverlay sceneOverlay;
 
     @Inject
@@ -106,6 +110,11 @@ public class FishingPlugin extends Plugin {
     @Override
     protected void startUp() {
         ctx.initializePackets();
+
+        if(config.highlightCurrentPath()) {
+            overlayManager.add(globalPathfinderOverlay);
+        }
+
         fishingScript.setTasksForLocation(config.fishingLocation());
         pluginLogger.attach(PLUGIN_PACKAGE);
 
@@ -151,6 +160,14 @@ public class FishingPlugin extends Plugin {
                 if(config.mouseMovementStrategy() == MouseMovementStrategy.LINEAR) {
                     LinearStrategy linear = (LinearStrategy) MouseMovementStrategy.LINEAR.getStrategy();
                     linear.setSteps(config.linearSteps());
+                }
+            }
+
+            if(key.equals("highlightCurrentPath")) {
+                if(config.highlightCurrentPath()) {
+                    overlayManager.add(globalPathfinderOverlay);
+                } else {
+                    overlayManager.remove(globalPathfinderOverlay);
                 }
             }
 
