@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.kraken.api.core.script.AbstractTask;
 import com.kraken.api.query.gameobject.GameObjectEntity;
+import com.kraken.api.service.pathfinding.GlobalPathfinder;
 import com.kraken.api.service.util.SleepService;
 import com.krakenplugins.example.mining.MiningPlugin;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +19,13 @@ public class MiningTask extends AbstractTask {
     @Inject
     private MiningPlugin plugin;
 
+    @Inject
+    private GlobalPathfinder pathfinder;
+
     @Override
     public boolean validate() {
         boolean playerInMiningArea = ctx.players().local().isInArea(plugin.getMiningArea());
         boolean inventoryHasSpace = !ctx.inventory().isFull();
-//        boolean isIdle = ctx.players().local().isIdle();
         return playerInMiningArea && inventoryHasSpace;
     }
 
@@ -38,6 +41,7 @@ public class MiningTask extends AbstractTask {
                 return 0;
             }
 
+            pathfinder.clearLastResult();
             if(IRON_ORE_DEPLETED_GAME_OBJECTS.contains(targetRock.getId())) {
                 GameObjectEntity ironRock = findRock();
                 if(ironRock == null) {

@@ -4,7 +4,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.kraken.api.core.script.AbstractTask;
 import com.kraken.api.service.movement.MovementService;
-import com.kraken.api.service.pathfinding.LocalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinder;
+import com.kraken.api.service.pathfinding.GlobalPathfinderConfig;
 import com.krakenplugins.example.mining.MiningPlugin;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +21,7 @@ import static com.krakenplugins.example.mining.MiningPlugin.BANK_LOCATION;
 public class WalkToBankTask extends AbstractTask {
 
     @Inject
-    private LocalPathfinder pathfinder;
+    private GlobalPathfinder pathfinder;
 
     @Inject
     private MiningPlugin plugin;
@@ -33,18 +34,8 @@ public class WalkToBankTask extends AbstractTask {
     private boolean arrivedAtIntermediatePoint = false;
 
     private boolean isTraversing = false;
-    private static final List<WorldPoint> path = List.of(
-            new WorldPoint(3287, 3370, 0),
-            new WorldPoint(3293, 3377, 0),
-            new WorldPoint(3291, 3388, 0),
-            new WorldPoint(3290, 3398, 0),
-            new WorldPoint(3289, 3410, 0),
-            new WorldPoint(3283, 3418, 0),
-            new WorldPoint(3278, 3426, 0),
-            new WorldPoint(3267, 3427, 0),
-            new WorldPoint(3257, 3428, 0),
-            new WorldPoint(3253, 3420, 0)
-    );
+
+    private static final WorldPoint VARROCK_EAST_BANK = new WorldPoint(3253, 3421, 0);
 
     @Override
     public boolean validate() {
@@ -72,10 +63,28 @@ public class WalkToBankTask extends AbstractTask {
         isTraversing = true;
 
         try {
-            List<WorldPoint> stridedPath = pathfinder.randomizeSparsePath(ctx.players().local().location(), path, 2, 5, false);
-            plugin.getCurrentPath().clear();
-            plugin.getCurrentPath().addAll(stridedPath);
-            movementService.traversePath(ctx.getClient(), stridedPath);
+            List<WorldPoint> currentPath = pathfinder.findPath(playerLocation, VARROCK_EAST_BANK, GlobalPathfinderConfig.builder()
+                    .useMinecarts(false)
+                    .avoidWilderness(true)
+                    .useSpiritTrees(false)
+                    .useTeleportationLevers(false)
+                    .useTeleportationPortalsPoh(false)
+                    .useTeleportationSpells(false)
+                    .useAgilityShortcuts(false)
+                    .build());
+
+            if (currentPath == null || currentPath.isEmpty()) {
+                log.error("Failed to generate any path to Varrock East Bank");
+                isTraversing = false;
+                return 1000;
+            }
+
+            // Apply variable stride for more natural movement
+            List<WorldPoint> stridedPath = movementService.applyVariableStride(currentPath);
+            log.info("Path generated with {} waypoints", stridedPath.size());
+
+            // Traverse the path
+           movementService.traversePath(ctx.getClient(), stridedPath);
             return 1000;
         } catch (Exception e) {
             log.error("Error during walk to bank", e);

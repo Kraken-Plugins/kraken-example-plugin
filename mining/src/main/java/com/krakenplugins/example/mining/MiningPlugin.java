@@ -7,6 +7,7 @@ import com.kraken.api.Context;
 import com.kraken.api.input.mouse.VirtualMouse;
 import com.kraken.api.input.mouse.strategy.MouseMovementStrategy;
 import com.kraken.api.input.mouse.strategy.linear.LinearStrategy;
+import com.kraken.api.overlay.GlobalPathfinderOverlay;
 import com.kraken.api.overlay.MouseOverlay;
 import com.kraken.api.service.tile.AreaService;
 import com.kraken.api.service.tile.GameArea;
@@ -70,6 +71,9 @@ public class MiningPlugin extends Plugin {
     private MouseOverlay mouseTrackerOverlay;
 
     @Inject
+    private GlobalPathfinderOverlay globalPathfinderOverlay;
+
+    @Inject
     private SceneOverlay sceneOverlay;
 
     @Inject
@@ -104,6 +108,10 @@ public class MiningPlugin extends Plugin {
     @Override
     protected void startUp() {
         ctx.initializePackets();
+
+        if(config.renderPath()) {
+            overlayManager.add(globalPathfinderOverlay);
+        }
 
         WorldPoint[] bankArea = {
                 new WorldPoint(3258, 3424, 0),
@@ -160,6 +168,14 @@ public class MiningPlugin extends Plugin {
                 if(config.mouseMovementStrategy() == MouseMovementStrategy.LINEAR) {
                     LinearStrategy linear = (LinearStrategy) MouseMovementStrategy.LINEAR.getStrategy();
                     linear.setSteps(config.linearSteps());
+                }
+            }
+
+            if(key.equals("renderPath")) {
+                if(config.renderPath()) {
+                    overlayManager.remove(globalPathfinderOverlay);
+                } else {
+                    overlayManager.remove(globalPathfinderOverlay);
                 }
             }
 
