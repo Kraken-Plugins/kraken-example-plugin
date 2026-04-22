@@ -60,6 +60,7 @@ public class WalkToEdgeville extends AbstractTask {
             currentPath = pathfinder.findPath(playerLocation, EDGEVILLE_BANK, GlobalPathfinderConfig.builder()
                     .useMinecarts(false)
                     .avoidWilderness(true)
+                    .useSpiritTrees(false)
                     .useTeleportationLevers(false)
                     .useTeleportationPortalsPoh(false)
                     .useTeleportationSpells(false)

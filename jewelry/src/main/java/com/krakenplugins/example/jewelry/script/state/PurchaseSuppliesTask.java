@@ -65,6 +65,9 @@ public class PurchaseSuppliesTask extends AbstractTask {
                 config.enableResupply();
     }
 
+// Option=Enable <col=ff9040>Notes, Target=, Param0=-1, Param1=786451, MenuAction=CC_OP, ItemId=-1, id=1, itemOp=-1, str=MenuOptionClicked(getParam0=-1, getParam1=786451, getMenuOption=Enable <col=ff9040>Notes, getMenuTarget=, getMenuAction=CC_OP, getId=1)
+//Option=Disable <col=ff9040>Notes, Target=, Param0=-1, Param1=786451, MenuAction=CC_OP, ItemId=-1, id=1, itemOp=-1, str=MenuOptionClicked(getParam0=-1, getParam1=786451, getMenuOption=Disable <col=ff9040>Notes, getMenuTarget=, getMenuAction=CC_OP, getId=1)
+
     @Override
     public int execute() {
         log.info("Attempting to purchase");
@@ -145,7 +148,9 @@ public class PurchaseSuppliesTask extends AbstractTask {
         int craftedId = config.jewelry().getCraftedItemId();
         BankEntity crafted = ctx.bank().withId(craftedId).first();
         if (crafted != null && crafted.count() > 0) {
-            crafted.withdrawAllNoted();
+            bankService.setWithdrawMode(true);
+            SleepService.sleepFor(3);
+            crafted.withdrawAll();
             SleepService.sleepFor(1);
         }
 
