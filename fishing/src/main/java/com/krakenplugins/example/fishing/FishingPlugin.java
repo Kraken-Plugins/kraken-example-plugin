@@ -109,8 +109,6 @@ public class FishingPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        ctx.initializePackets();
-
         if(config.highlightCurrentPath()) {
             overlayManager.add(globalPathfinderOverlay);
         }

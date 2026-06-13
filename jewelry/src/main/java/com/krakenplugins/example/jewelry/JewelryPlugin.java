@@ -108,8 +108,6 @@ public class JewelryPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        ctx.initializePackets();
-
         if (config.showCurrentPath()) {
             overlayManager.add(globalPathfinderOverlay);
         }

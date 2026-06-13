@@ -107,8 +107,6 @@ public class MiningPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        ctx.initializePackets();
-
         if(config.renderPath()) {
             overlayManager.add(globalPathfinderOverlay);
         }

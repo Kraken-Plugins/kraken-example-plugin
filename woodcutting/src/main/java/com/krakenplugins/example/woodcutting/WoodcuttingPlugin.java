@@ -92,7 +92,6 @@ public class WoodcuttingPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        ctx.initializePackets();
         woodcuttingScript.start();
         overlayManager.add(scriptOverlay);
         overlayManager.add(mouseTrackerOverlay);

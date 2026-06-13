@@ -92,8 +92,6 @@ public class AutoRunecraftingPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        ctx.initializePackets();
-
         WorldPoint[] bank = {
                 new WorldPoint(3009, 3358, 0),
                 new WorldPoint(3009, 3353, 0),

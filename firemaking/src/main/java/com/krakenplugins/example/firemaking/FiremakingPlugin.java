@@ -99,7 +99,6 @@ public class FiremakingPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        ctx.initializePackets();
         firemakingScript.start();
         bankLocation = areaService.createPolygonArea(List.of(
             new WorldPoint(3167, 3493, 0),
