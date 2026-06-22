@@ -8,7 +8,7 @@ plugins {
     id 'java'
 }
 
-def runeLiteVersion = '1.12.28' // latest.release
+def runeLiteVersion = '1.12.30' // latest.release
 def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '3.1.5'
 
 allprojects {
