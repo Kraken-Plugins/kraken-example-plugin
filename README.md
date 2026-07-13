@@ -12,7 +12,7 @@
 </div>
 
 [![Contributors][contributors-shield]][contributors-url]
-[![Discord Chat](https://shields.io)](https://discord.gg/6UGZqXj22s)
+[![Discord](https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/6UGZqXj22s)
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
