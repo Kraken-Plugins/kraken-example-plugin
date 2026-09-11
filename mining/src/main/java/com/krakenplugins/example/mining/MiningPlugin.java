@@ -187,7 +187,6 @@ public class MiningPlugin extends Plugin {
         overlayManager.remove(mouseTrackerOverlay);
         overlayManager.remove(sceneOverlay);
         overlayManager.remove(globalPathfinderOverlay);
-        ctx.shutdown();
     }
 
     @Subscribe

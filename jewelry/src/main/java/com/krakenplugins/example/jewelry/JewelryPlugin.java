@@ -190,7 +190,6 @@ public class JewelryPlugin extends Plugin {
         overlayManager.remove(mouseTrackerOverlay);
         overlayManager.remove(sceneOverlay);
         overlayManager.remove(globalPathfinderOverlay);
-        ctx.shutdown();
     }
 
     @Subscribe
