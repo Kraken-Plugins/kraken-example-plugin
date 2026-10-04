@@ -7,11 +7,10 @@
 <h3 align="center">Kraken Example Plugins</h3>
 
   <p align="center">
-   An set of example automation plugins utilizing the Kraken API
+   An set of example plugins utilizing the Kraken API
     <br />
 </div>
 
-[![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/6UGZqXj22s)
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -19,7 +18,7 @@
 
 # Kraken Example Plugins
 
-This repository contains examples for writing automation plugins using the [Kraken API](https://github.com/cbartram/kraken-api.git).
+This repository contains examples for writing plugins using the [Kraken API](https://github.com/cbartram/kraken-api.git).
 The Kraken API extends the RuneLite API with the ability to interact with various game entities, including:
 
 - Widgets (Prayers, Spells, Interfaces, etc...)
@@ -32,8 +31,7 @@ The Kraken API extends the RuneLite API with the ability to interact with variou
 - Container Items (Inventory, Bank, etc...)
 - and more!
 
-The Kraken API also ships with several handy features for developing automation plugins (scripts) right on top of RuneLite
-like `TaskChain`'s, pathfinding, advanced mouse movement, abstractions for writing scripts, and network packet classes. 
+The Kraken API also ships with several handy features for developing plugins right on top of RuneLite.
 This repository contains several examples of fully functioning automation scripts showcasing the API's capabilities.
 
 ### Plugin & Script Requirements
@@ -48,13 +46,13 @@ in their respective README's linked below.
 - [Firemaking Plugin](docs/FIREMAKING.md)
 - [Runecrafting Plugin](docs/RUNECRAFTING.md)
 
-> **Note:** These plugins are dependent on the [Kraken API](https://github.com/cbartram/kraken-api) and require the Kraken Client to be installed. We strongly
+> **Note:** These plugins are dependent on the [Kraken API](https://github.com/Kraken-Plugins/kraken-api) and require the Kraken Client to be installed. We strongly
 > recommend using the [Kraken Client](https://kraken-plugins.com/) to make testing and using these plugins simple.
 
 # QuickStart
 
-Because the [Kraken API](https://github.com/cbartram/kraken-api) is required on the Runtime classpath we recommend using the [Kraken Client](https://kraken-plugins.com/docs/client/download.html) to sideload the plugins
-as it already loads the [Kraken API](https://github.com/cbartram/kraken-api) automatically. This ensures you don't have to write your own plugin loader! The
+Because the [Kraken API](https://github.com/Kraken-Plugins/kraken-api) is required on the Runtime classpath we recommend using the [Kraken Client](https://kraken-plugins.com/docs/client/download.html) to sideload the plugins
+as it already loads the [Kraken API](https://github.com/Kraken-Plugins/kraken-api) automatically. This ensures you don't have to write your own plugin loader! The
 following steps assume you are using the Kraken client.
 
 Instructions for setting up the Kraken Client can [be found here](https://kraken-plugins.com/docs/client/download.html).
@@ -72,7 +70,7 @@ plugins, simply add this repo as a source for the plugins.
 
 Paste the link to the repositories latest manifest here in the dialogue:
 
-`https://github.com/cbartram/kraken-example-plugin/releases/latest/download/manifest.json`
+`https://github.com/Kraken-Plugins/kraken-example-plugin/releases/latest/download/manifest.json`
 
 Once you add this repository, the plugins will be loaded automatically:
 
@@ -110,7 +108,7 @@ is on RuneLite's runtime classpath in order for the plugins to load correctly.
 
 ## Gradle Kraken API
 
-Please see [these docs](https://github.com/cbartram/kraken-api?tab=readme-ov-file#gradle-example-recommended) for including the Kraken API
+Please see [these docs](https://github.com/Kraken-Plugins/kraken-api?tab=readme-ov-file#gradle-example-recommended) for including the Kraken API
 as part of your RuneLite plugin's build process.
 
 ## 🛠 Built With
@@ -118,7 +116,7 @@ as part of your RuneLite plugin's build process.
 * [Java](https://www.java.org/) — Core language
 * [Gradle](https://gradle.org/) — Build tool
 * [RuneLite](https://runelite.net) — Used for as the backbone for the API
-* [Kraken API](https://github.com/cbartram/kraken-api) – Interaction API
+* [Kraken API](https://github.com/Kraken-Plugins/kraken-api) – Interaction API
 
 ---
 
@@ -131,7 +129,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 ## 🔖 Versioning
 
 We use [Semantic Versioning](http://semver.org/).
-See the [tags on this repository](https://github.com/cbartram/kraken-api/tags) for available releases.
+See the [tags on this repository](https://github.com/Kraken-Plugins/kraken-api/tags) for available releases.
 
 ---
 
@@ -148,11 +146,11 @@ This project is licensed under the [GNU General Public License 3.0](LICENSE.md).
 * **Packet Utils** - Plugin from Ethan Vann providing access to complex packet sending functionality which was used to develop the core.packet package of the API
 
 
-[contributors-shield]: https://img.shields.io/github/contributors/cbartram/kraken-example-plugin.svg?style=for-the-badge
-[contributors-url]: https://github.com/cbartram/kraken-example-plugin/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/cbartram/kraken-example-plugin.svg?style=for-the-badge
-[forks-url]: https://github.com/cbartram/kraken-example-plugin/network/members
-[stars-shield]: https://img.shields.io/github/stars/cbartram/kraken-example-plugin.svg?style=for-the-badge
-[stars-url]: https://github.com/cbartram/kraken-example-plugin/stargazers
-[issues-shield]: https://img.shields.io/github/issues/cbartram/kraken-example-plugin.svg?style=for-the-badge
-[issues-url]: https://github.com/cbartram/kraken-example-plugin/issues
+[contributors-shield]: https://img.shields.io/github/contributors/Kraken-Plugins/kraken-example-plugin.svg?style=for-the-badge
+[contributors-url]: https://github.com/Kraken-Plugins/kraken-example-plugin/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Kraken-Plugins/kraken-example-plugin.svg?style=for-the-badge
+[forks-url]: https://github.com/Kraken-Plugins/kraken-example-plugin/network/members
+[stars-shield]: https://img.shields.io/github/stars/Kraken-Plugins/kraken-example-plugin.svg?style=for-the-badge
+[stars-url]: https://github.com/Kraken-Plugins/kraken-example-plugin/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Kraken-Plugins/kraken-example-plugin.svg?style=for-the-badge
+[issues-url]: https://github.com/Kraken-Plugins/kraken-example-plugin/issues
