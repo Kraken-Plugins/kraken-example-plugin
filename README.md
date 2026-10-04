@@ -89,6 +89,8 @@ with this fingerprint:
 9174A4AA201DBB92
 ```
 
+![signed](docs/images/signed.png)
+
 ## Run Sideloaded
 
 If you would like to load all the plugins at once, you can move the built plugin jar files to `~/.runelite/kraken/sideloaded-plugins` assuming you are using the 
