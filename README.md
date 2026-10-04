@@ -80,6 +80,15 @@ You will find your plugins in the Kraken plugins list:
 
 ![sideloaded-plugins-list](docs/images/sideloaded.png)
 
+## Plugin Verification
+
+The plugins and manifest being loaded into your client is signed. You can verify it by comparing what you see in the client
+with this fingerprint:
+
+```text
+9174A4AA201DBB92
+```
+
 ## Run Sideloaded
 
 If you would like to load all the plugins at once, you can move the built plugin jar files to `~/.runelite/kraken/sideloaded-plugins` assuming you are using the 

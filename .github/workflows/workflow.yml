@@ -133,6 +133,47 @@ jobs:
           echo "Generated manifest.json:"
           cat manifest.json
 
+      # Wraps manifest.json in the signed envelope the Kraken client verifies. Clients pin this key the first time a
+      # user approves the repository, so updates signed with it apply without a review. The build fails rather than
+      # publishing an unsigned manifest, which every user who pinned the key would be asked to review.
+      - name: Sign manifest.json
+        env:
+          # Ed25519 private key PEM, from: openssl genpkey -algorithm ed25519
+          KRAKEN_SIGNING_KEY: ${{ secrets.KRAKEN_SIGNING_KEY }}
+        run: |
+          if [ -z "$KRAKEN_SIGNING_KEY" ]; then
+            echo "::error::The KRAKEN_SIGNING_KEY secret is not set, so the manifest cannot be signed."
+            exit 1
+          fi
+
+          KEY_FILE="$RUNNER_TEMP/kraken-signing-key.pem"
+          trap 'rm -f "$KEY_FILE"' EXIT
+          (umask 077 && printf '%s\n' "$KRAKEN_SIGNING_KEY" > "$KEY_FILE")
+
+          KEY_TYPE=$(openssl pkey -in "$KEY_FILE" -noout -text 2>/dev/null || true)
+          case "$KEY_TYPE" in
+            "ED25519 Private-Key"*) ;;
+            *)
+              echo "::error::KRAKEN_SIGNING_KEY must be an Ed25519 private key PEM (openssl genpkey -algorithm ed25519)."
+              exit 1
+              ;;
+          esac
+
+          openssl pkeyutl -sign -inkey "$KEY_FILE" -rawin -in manifest.json -out manifest.sig
+          openssl pkey -in "$KEY_FILE" -pubout -out public-key.pem
+          openssl pkeyutl -verify -pubin -inkey public-key.pem -rawin -in manifest.json -sigfile manifest.sig
+
+          PUBLIC_KEY=$(openssl pkey -pubin -in public-key.pem -outform DER | base64 -w0)
+          FINGERPRINT=$(openssl pkey -pubin -in public-key.pem -outform DER | openssl dgst -sha256 | awk '{print toupper(substr($2,1,16))}' | sed 's/.\{4\}/& /g; s/ $//')
+
+          jq -n --arg m "$(base64 -w0 manifest.json)" --arg s "$(base64 -w0 manifest.sig)" --arg k "$PUBLIC_KEY" \
+            '{signedManifest: $m, signature: $s, publicKey: $k}' > signed-manifest.json
+          mv signed-manifest.json manifest.json
+          rm -f manifest.sig public-key.pem
+
+          echo "FINGERPRINT=$FINGERPRINT" >> "$GITHUB_ENV"
+          echo "Signed manifest.json with key $FINGERPRINT"
+
       - name: Create Git tag
         run: |
           git config user.name "GitHub Actions"
@@ -149,7 +190,8 @@ jobs:
             Automated release of version ${{ env.VERSION }}
             
             ## Plugins included in this release:
-            See manifest.json for full details.
+            See manifest.json for full details. It is signed with key `${{ env.FINGERPRINT }}`; the Kraken client shows
+            this fingerprint on its review screen when you add the repository.
           files: |
             build/plugins/*.jar
             manifest.json
