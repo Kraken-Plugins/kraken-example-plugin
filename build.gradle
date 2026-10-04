@@ -11,6 +11,12 @@ plugins {
 def runeLiteVersion = '1.13.1' // latest.release
 def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.1.4'
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 allprojects {
     apply plugin: 'java'
 
@@ -84,7 +90,7 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
-        options.release.set(11)
+        options.release.set(17)
     }
 
     tasks.register('simpleJar', Jar) {
