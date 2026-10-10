@@ -6,10 +6,12 @@ buildscript {
 
 plugins {
     id 'java'
+    // Runs the Kraken client with the example plugins sideloaded: ./gradlew runKraken, or ./gradlew :mining:runKraken
+    id 'com.krakenplugins.plugin' version '0.1.0'
 }
 
 def runeLiteVersion = '1.13.1' // latest.release
-def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.1.4'
+def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.1.7'
 
 java {
     toolchain {
@@ -38,16 +40,7 @@ allprojects {
         }
         mavenCentral()
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Kraken-Plugins/kraken-api")
-            credentials {
-                username = project.findProperty("gpr.usr") ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-
-        maven {
-            url 'https://jitpack.io'
+            url = 'https://repo.kraken-plugins.com'
             content {
                 includeGroup "com.github.kraken"
             }
@@ -72,6 +65,8 @@ dependencies {
 }
 
 subprojects {
+    apply plugin: 'com.krakenplugins.plugin'
+
     dependencies {
         compileOnly group: 'com.github.kraken', name:'kraken-api', version: krakenApiVersion
 
@@ -116,4 +111,9 @@ tasks.register('buildAndCollectSimpleJars') {
     doLast {
         println "All simple JARs have been built and copied to ${jarsDir.get()}"
     }
+}
+
+// The root runKraken sideloads every example plugin at once; each plugin's own runKraken sideloads just that plugin.
+kraken {
+    sideload.setFrom(subprojects.collect { it.tasks.named('jar') })
 }

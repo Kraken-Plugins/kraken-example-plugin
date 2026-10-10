@@ -1,3 +1,17 @@
+pluginManagement {
+    // A checkout of the Kraken Gradle plugin next to this repository takes the place of the published plugin, so
+    // changes to it can be tried here before they're released. -Pkraken.publishedPlugin uses the published one anyway.
+    def localKrakenGradlePlugin = file('../kraken-gradle-plugin')
+    if (localKrakenGradlePlugin.isDirectory() && !providers.gradleProperty('kraken.publishedPlugin').isPresent()) {
+        includeBuild(localKrakenGradlePlugin)
+    }
+
+    repositories {
+        maven { url = 'https://repo.kraken-plugins.com' }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'kraken-example-plugin'
 
 include 'fishing'
@@ -5,9 +19,5 @@ include 'jewelry'
 include 'mining'
 include 'woodcutting'
 include 'firemaking'
-include 'fishing'
-include 'jewelry'
-include 'mining'
-include 'woodcutting'
 include 'runecrafting'
 include 'combat'
