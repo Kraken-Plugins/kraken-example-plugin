@@ -119,7 +119,8 @@ To check that the Kraken API you compile against works with the one your client 
 
 ### Sideloading by hand
 
-You can also copy the built jars from `./build/plugins` into `~/.runelite/kraken/sideloaded-plugins`. The Kraken client
+You can also build the jars with `./gradlew assemble` and copy them from `<plugin>/build/libs` into
+`~/.runelite/kraken/sideloaded-plugins`. The Kraken client
 loads every jar in that directory at startup, and the plugins appear in the list of Kraken plugins.
 
 ![sideloaded-plugins](docs/images/sideloaded.png)
@@ -131,10 +132,11 @@ Use JDK 17. The Kraken API comes from the public Kraken Maven repository (`https
 GitHub account or token is needed.
 
 ```shell
-./gradlew clean buildAndCollectSimpleJars --parallel
+./gradlew clean assemble --parallel
 ```
 
-Your plugin jars will be built in the `./build/plugins` directory.
+Each plugin's jar is built as `<plugin>/build/libs/<plugin>-<version>.jar`, with the version set in that plugin's
+`build.gradle`.
 
 The `Run<Plugin>PluginTest` classes still work for running a single plugin from the IDE without the Kraken client. Add
 `-ea` to the VM args and `--developer-mode` to the program arguments. That path runs plain RuneLite with the Kraken API
@@ -157,7 +159,7 @@ pluginManagement {
 ```groovy
 // build.gradle
 plugins {
-    id 'com.krakenplugins.plugin' version '0.1.0'
+    id 'com.krakenplugins.plugin' version '0.1.1'
 }
 
 repositories {

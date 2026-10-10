@@ -1,29 +1,16 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
+import java.util.concurrent.Callable
 
 plugins {
-    id 'java'
-    // Runs the Kraken client with the example plugins sideloaded: ./gradlew runKraken, or ./gradlew :mining:runKraken
-    id 'com.krakenplugins.plugin' version '0.1.0'
+    id 'com.krakenplugins.plugin' version '0.1.1'
 }
 
 def runeLiteVersion = '1.13.1' // latest.release
 def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.1.7'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+subprojects {
+    apply plugin: 'com.krakenplugins.plugin'
 
-allprojects {
-    apply plugin: 'java'
-
-    ext.runeLiteVersion = runeLiteVersion
-    ext.krakenApiVersion = krakenApiVersion
+    group = 'com.krakenplugins'
 
     repositories {
         mavenLocal {
@@ -31,7 +18,6 @@ allprojects {
                 includeGroup "com.github.kraken"
             }
         }
-
         maven {
             url = 'https://repo.runelite.net'
             content {
@@ -45,75 +31,25 @@ allprojects {
                 includeGroup "com.github.kraken"
             }
         }
-        flatDir {
-            dirs 'libs'
-        }
     }
 
-    group = 'com.krakenplugins'
-
-    // Create a directory for collecting all JARs
-    ext.jarsDir = layout.buildDirectory.dir('plugins')
-}
-
-
-dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
-    testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion
-    testImplementation group: 'com.github.kraken', name:'kraken-api', version: krakenApiVersion
-}
-
-subprojects {
-    apply plugin: 'com.krakenplugins.plugin'
-
     dependencies {
-        compileOnly group: 'com.github.kraken', name:'kraken-api', version: krakenApiVersion
-
-        compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
+        compileOnly group: 'com.github.kraken', name: 'kraken-api', version: krakenApiVersion
+        compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
         compileOnly 'org.projectlombok:lombok:1.18.30'
         annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-        testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion
-        testImplementation group: 'com.github.kraken', name:'kraken-api', version: krakenApiVersion
+        // The Run<Plugin>PluginTest classes run the plugin in plain RuneLite from the IDE.
+        testImplementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+        testImplementation group: 'com.github.kraken', name: 'kraken-api', version: krakenApiVersion
     }
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
         options.release.set(17)
     }
-
-    tasks.register('simpleJar', Jar) {
-        dependsOn jar
-        manifest {
-            attributes(
-                    'Main-Class': "com.krakenplugins.${project.name.capitalize()}Plugin",
-                    'Multi-Release': true
-            )
-        }
-
-        from sourceSets.main.output
-        archiveClassifier.set('simple')
-        archiveFileName.set("${project.name}-${project.version}.jar")
-    }
-
-    tasks.register('copySimpleJar', Copy) {
-        from simpleJar
-        into rootProject.jarsDir
-        dependsOn simpleJar, jar
-    }
 }
 
-tasks.register('buildAndCollectSimpleJars') {
-    dependsOn subprojects.copySimpleJar
-    description = 'Builds simple JARs for all sub-projects and copies them to build/jars'
-
-    doLast {
-        println "All simple JARs have been built and copied to ${jarsDir.get()}"
-    }
-}
-
-// The root runKraken sideloads every example plugin at once; each plugin's own runKraken sideloads just that plugin.
 kraken {
-    sideload.setFrom(subprojects.collect { it.tasks.named('jar') })
+    sideload.setFrom({ subprojects.collect { it.tasks.named('jar') } } as Callable)
 }

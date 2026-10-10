@@ -32,7 +32,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x ./gradlew
-          ./gradlew clean buildAndCollectSimpleJars --stacktrace
+          ./gradlew clean assemble --stacktrace
+
+          mkdir -p build/plugins
+          cp */build/libs/*.jar build/plugins/
 
       - name: Calculate version
         run: |
