@@ -77,7 +77,7 @@ jobs:
               "id": "ID_PLACEHOLDER",
               "name": "Kraken Example Plugins",
               "version": "VERSION_PLACEHOLDER",
-              "author": "RuneWraith",
+              "author": "cbartram",
               "description": "Collection of RuneLite Automation plugins built with the Kraken API.",
               "website": "https://github.com/Kraken-Plugins/kraken-example-plugins",
               "lastUpdated": "TIMESTAMP_PLACEHOLDER"

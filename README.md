@@ -105,7 +105,7 @@ client first, then run:
 ./gradlew :mining:runKraken
 
 # Log in as a Jagex profile linked with the Profiles plugin, and/or wait for a debugger on port 5005
-./gradlew :mining:runKraken --profile RuneWraith --debug-jvm
+./gradlew :mining:runKraken --profile MyCharacter --debug-jvm
 ```
 
 `runKraken` builds the plugin jars and starts the client the same way the Kraken launcher does, so the client brings the
