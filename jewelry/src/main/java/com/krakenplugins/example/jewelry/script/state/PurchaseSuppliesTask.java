@@ -8,6 +8,7 @@ import com.kraken.api.service.bank.BankService;
 import com.kraken.api.service.grandexchange.GrandExchangeService;
 import com.kraken.api.service.grandexchange.GrandExchangeSlot;
 import com.kraken.api.service.util.SleepService;
+import com.kraken.api.service.util.price.ItemPrice;
 import com.kraken.api.service.util.price.ItemPriceService;
 import com.krakenplugins.example.jewelry.JewelryConfig;
 import com.krakenplugins.example.jewelry.JewelryPlugin;
@@ -18,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Singleton
@@ -154,7 +154,7 @@ public class PurchaseSuppliesTask extends AbstractTask {
             return;
         }
 
-        int price = getMinSellPrice(config.jewelry().getCraftedItemId()).join();
+        int price = getMinSellPrice(config.jewelry().getCraftedItemId());
         if (price <= 0) {
             log.error("Invalid sell price returned (0), aborting sell.");
             return;
@@ -178,13 +178,8 @@ public class PurchaseSuppliesTask extends AbstractTask {
             return;
         }
 
-        CompletableFuture<Integer> goldFuture = getMaxBuyPrice(JewelryScript.GOLD_BAR);
-        CompletableFuture<Integer> gemFuture = getMaxBuyPrice(config.jewelry().getSecondaryGemId());
-
-        CompletableFuture.allOf(goldFuture, gemFuture).join();
-
-        int goldBarPrice = goldFuture.join();
-        int gemPrice = gemFuture.join();
+        int goldBarPrice = getMaxBuyPrice(JewelryScript.GOLD_BAR);
+        int gemPrice = getMaxBuyPrice(config.jewelry().getSecondaryGemId());
 
         // Safety check
         if (goldBarPrice <= 0 || gemPrice <= 0) {
@@ -323,66 +318,39 @@ public class PurchaseSuppliesTask extends AbstractTask {
     }
 
     /**
-     * Async calculation of Max Buy Price.
-     * Returns a Future that will eventually contain the calculated price.
+     * Calculates the most the script will pay for an item: its wiki price plus the configured purchase buffer.
+     * @param itemId The item to price
+     * @return The buffered buy price, or 0 when the item has no price, which aborts the buy
      */
-    private CompletableFuture<Integer> getMaxBuyPrice(int itemId) {
-        CompletableFuture<Integer> future = new CompletableFuture<>();
-        double percentBuffer = (double) config.purchaseBufferPercent() / 100;
+    private int getMaxBuyPrice(int itemId) {
+        ItemPrice price = itemPriceService.getItemPrice(itemId);
+        if (price == null) {
+            log.error("Failed to lookup buy price for item: {}", itemId);
+            return 0;
+        }
 
-        // Call the async service
-        itemPriceService.getItemPrice(itemId, "ItemPriceAPI/1.0", (price) -> {
-            if (price == null) {
-                log.error("Failed to lookup buy price for item: {}", itemId);
-                future.complete(0); // Zero aborts the buy rather than offering a nominal price
-                return;
-            }
-
-            try {
-                int averagePrice = price.getLow() + ((price.getHigh() - price.getLow()) / 2);
-                int bufferAmount = (int) (averagePrice * percentBuffer);
-                int finalPrice = averagePrice + bufferAmount;
-
-                log.info("Buy price for item {}: {} (avg: {}, buffer: +{})", itemId, finalPrice, averagePrice, bufferAmount);
-                future.complete(finalPrice);
-            } catch (Exception e) {
-                log.error("Error calculating buy price for item {}", itemId, e);
-                future.complete(0);
-            }
-        });
-
-        return future;
+        long bufferAmount = (long) (price.getWikiPrice() * (config.purchaseBufferPercent() / 100.0));
+        int finalPrice = (int) (price.getWikiPrice() + bufferAmount);
+        log.info("Buy price for item {}: {} (wiki: {}, buffer: +{})", itemId, finalPrice, price.getWikiPrice(), bufferAmount);
+        return finalPrice;
     }
 
     /**
-     * Async calculation of Min Sell Price.
-     * Returns a Future that will eventually contain the calculated price.
+     * Calculates the least the script will accept for an item: its wiki price minus the configured sell buffer.
+     * @param itemId The item to price
+     * @return The buffered sell price, or 0 when the item has no price, which aborts the sale
      */
-    private CompletableFuture<Integer> getMinSellPrice(int itemId) {
-        CompletableFuture<Integer> future = new CompletableFuture<>();
-        double percentBuffer = (double) config.sellBufferPercent() / 100;
+    private int getMinSellPrice(int itemId) {
+        ItemPrice price = itemPriceService.getItemPrice(itemId);
+        if (price == null) {
+            log.error("Failed to lookup sell price for item: {}", itemId);
+            return 0;
+        }
 
-        itemPriceService.getItemPrice(itemId, "ItemPriceAPI/1.0", (price) -> {
-            if (price == null) {
-                log.error("Failed to lookup sell price for item: {}", itemId);
-                future.complete(0);
-                return;
-            }
-
-            try {
-                int averagePrice = price.getLow() + ((price.getHigh() - price.getLow()) / 2);
-                int bufferAmount = (int) (averagePrice * percentBuffer);
-                int finalPrice = averagePrice - bufferAmount;
-
-                log.info("Sell price for item {}: {} (avg: {}, buffer: -{})", itemId, finalPrice, averagePrice, bufferAmount);
-                future.complete(finalPrice);
-            } catch (Exception e) {
-                log.error("Error calculating sell price for item {}", itemId, e);
-                future.complete(0);
-            }
-        });
-
-        return future;
+        long bufferAmount = (long) (price.getWikiPrice() * (config.sellBufferPercent() / 100.0));
+        int finalPrice = (int) (price.getWikiPrice() - bufferAmount);
+        log.info("Sell price for item {}: {} (wiki: {}, buffer: -{})", itemId, finalPrice, price.getWikiPrice(), bufferAmount);
+        return finalPrice;
     }
 
     @Override

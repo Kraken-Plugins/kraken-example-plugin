@@ -5,7 +5,7 @@ plugins {
 }
 
 def runeLiteVersion = '1.13.1' // latest.release
-def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.1.7'
+def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.2.2'
 
 subprojects {
     apply plugin: 'com.krakenplugins.plugin'

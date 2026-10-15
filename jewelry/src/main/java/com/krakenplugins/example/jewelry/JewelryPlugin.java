@@ -40,7 +40,6 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -69,8 +68,6 @@ public class JewelryPlugin extends Plugin {
                     .useTeleportationSpells(false)
                     .build())
             .build();
-
-    private static final String PRICE_USER_AGENT = "ItemServiceAPI/1.0";
 
     @Inject
     private JewelryScript jewelryScript;
@@ -227,7 +224,7 @@ public class JewelryPlugin extends Plugin {
         int experience = e.getXp();
         if (craftingExperience > 0 && experience > craftingExperience) {
             metrics.setNecklacesCrafted(metrics.getNecklacesCrafted() + 1);
-            updateEstimatedProfitAsync();
+            updateEstimatedProfit();
         }
         craftingExperience = experience;
     }
@@ -333,47 +330,20 @@ public class JewelryPlugin extends Plugin {
     }
 
     /**
-     * Fetches prices for all 3 components in parallel, calculates profit,
-     * and updates the metrics object safely.
+     * Recalculates the estimated profit from the current wiki prices of the bar, gem and crafted item.
      */
-    private void updateEstimatedProfitAsync() {
-        CompletableFuture<ItemPrice> goldFuture = getPriceFuture(JewelryScript.GOLD_BAR);
-        CompletableFuture<ItemPrice> gemFuture = getPriceFuture(config.jewelry().getSecondaryGemId());
-        CompletableFuture<ItemPrice> productFuture = getPriceFuture(config.jewelry().getCraftedItemId());
+    private void updateEstimatedProfit() {
+        ItemPrice goldPrice = itemPriceService.getItemPrice(JewelryScript.GOLD_BAR);
+        ItemPrice gemPrice = itemPriceService.getItemPrice(config.jewelry().getSecondaryGemId());
+        ItemPrice necklacePrice = itemPriceService.getItemPrice(config.jewelry().getCraftedItemId());
 
-        // Wait for ALL of them to complete
-        CompletableFuture.allOf(goldFuture, gemFuture, productFuture).thenAccept(v -> {
-            try {
-                ItemPrice goldPrice = goldFuture.join();
-                ItemPrice gemPrice = gemFuture.join();
-                ItemPrice necklacePrice = productFuture.join();
+        if (goldPrice == null || gemPrice == null || necklacePrice == null) {
+            log.warn("Could not calculate profit: Missing price data.");
+            return;
+        }
 
-                if (goldPrice == null || gemPrice == null || necklacePrice == null) {
-                    log.warn("Could not calculate profit: Missing price data.");
-                    return;
-                }
-
-                int profitPerNecklace = getAvg(necklacePrice) - (getAvg(goldPrice) + getAvg(gemPrice));
-                metrics.setEstimatedProfit(metrics.getNecklacesCrafted() * profitPerNecklace);
-            } catch (Exception e) {
-                log.error("Error calculating profit", e);
-            }
-        });
-    }
-
-    /**
-     * Helper to bridge the callback-based price service to a CompletableFuture.
-     */
-    private CompletableFuture<ItemPrice> getPriceFuture(int itemId) {
-        CompletableFuture<ItemPrice> future = new CompletableFuture<>();
-
-        // This will be very fast after the first call and synchronous because the items prices will be cached
-        itemPriceService.getItemPrice(itemId, PRICE_USER_AGENT, future::complete);
-        return future;
-    }
-
-    private int getAvg(ItemPrice item) {
-        return item.getLow() + ((item.getHigh() - item.getLow()) / 2);
+        long profitPerNecklace = necklacePrice.getWikiPrice() - (goldPrice.getWikiPrice() + gemPrice.getWikiPrice());
+        metrics.setEstimatedProfit((int) (metrics.getNecklacesCrafted() * profitPerNecklace));
     }
 
     public String getRuntime() {
