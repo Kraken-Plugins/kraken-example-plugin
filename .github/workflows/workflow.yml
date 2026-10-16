@@ -26,17 +26,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build with Gradle
-        env:
-          GITHUB_USER: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean assemble --stacktrace
-
-          mkdir -p build/plugins
-          cp */build/libs/*.jar build/plugins/
-
       - name: Calculate version
         run: |
           # Read base version from file
@@ -68,114 +57,17 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Calculated version: $VERSION"
 
-      - name: Generate manifest.json
-        run: |
-          # Get current timestamp in ISO format
-          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          UNIQUE_ID=$(uuidgen)
-          
-          cat > manifest.json << 'MANIFEST_START'
-          {
-            "repository": {
-              "id": "ID_PLACEHOLDER",
-              "name": "Kraken Example Plugins",
-              "version": "VERSION_PLACEHOLDER",
-              "author": "cbartram",
-              "description": "Collection of RuneLite Automation plugins built with the Kraken API.",
-              "website": "https://github.com/Kraken-Plugins/kraken-example-plugins",
-              "lastUpdated": "TIMESTAMP_PLACEHOLDER"
-            },
-            "plugins": [
-          MANIFEST_START
-          
-          # Replace placeholders
-          sed -i "s/VERSION_PLACEHOLDER/$VERSION/g" manifest.json
-          sed -i "s/TIMESTAMP_PLACEHOLDER/$TIMESTAMP/g" manifest.json
-          sed -i "s/ID_PLACEHOLDER/$UNIQUE_ID/g" manifest.json
-          
-          # Process each JAR file in build/plugins directory
-          FIRST=true
-          for jar in build/plugins/*.jar; do
-            if [ -f "$jar" ]; then
-              # Get filename without path
-              FILENAME=$(basename "$jar")
-          
-              # Extract plugin name and version from filename
-              PLUGIN_NAME=$(echo "$FILENAME" | sed 's/-[0-9].*//' | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2));}1')
-              PLUGIN_VERSION=$(echo "$FILENAME" | grep -oP '\d+\.\d+\.\d+' || echo "1.0.0")
-          
-              # Calculate SHA256
-              SHA256=$(sha256sum "$jar" | awk '{print $1}')
-          
-              # Add comma if not first entry
-              if [ "$FIRST" = false ]; then
-                echo "," >> manifest.json
-              fi
-              FIRST=false
-          
-              # Add plugin entry
-              cat >> manifest.json << PLUGIN_ENTRY
-                {
-                  "name": "$PLUGIN_NAME",
-                  "version": "$PLUGIN_VERSION",
-                  "artifact": {
-                    "url": "https://github.com/Kraken-Plugins/kraken-example-plugin/releases/download/v$VERSION/$FILENAME",
-                    "sha256": "$SHA256"
-                  }
-                }
-          PLUGIN_ENTRY
-            fi
-          done
-          
-          # Close the JSON
-          cat >> manifest.json << 'MANIFEST_END'
-            ]
-          }
-          MANIFEST_END
-          
-          echo "Generated manifest.json:"
-          cat manifest.json
-
-      # Wraps manifest.json in the signed envelope the Kraken client verifies. Clients pin this key the first time a
-      # user approves the repository, so updates signed with it apply without a review. The build fails rather than
-      # publishing an unsigned manifest, which every user who pinned the key would be asked to review.
-      - name: Sign manifest.json
+      # Builds and tests every plugin, checks each against the Kraken API the client runs, and writes the jars with a
+      # manifest signed by KRAKEN_SIGNING_KEY to build/kraken-release. Clients pin this key the first time a user approves
+      # the repository, so updates signed with it apply without a review; the task fails rather than publish unsigned.
+      - name: Build, check and sign the release
         env:
-          # Ed25519 private key PEM, from: openssl genpkey -algorithm ed25519
+          # Ed25519 private key PEM, from ./gradlew krakenKeygen or: openssl genpkey -algorithm ed25519
           KRAKEN_SIGNING_KEY: ${{ secrets.KRAKEN_SIGNING_KEY }}
         run: |
-          if [ -z "$KRAKEN_SIGNING_KEY" ]; then
-            echo "::error::The KRAKEN_SIGNING_KEY secret is not set, so the manifest cannot be signed."
-            exit 1
-          fi
-
-          KEY_FILE="$RUNNER_TEMP/kraken-signing-key.pem"
-          trap 'rm -f "$KEY_FILE"' EXIT
-          (umask 077 && printf '%s\n' "$KRAKEN_SIGNING_KEY" > "$KEY_FILE")
-
-          KEY_TYPE=$(openssl pkey -in "$KEY_FILE" -noout -text 2>/dev/null || true)
-          case "$KEY_TYPE" in
-            "ED25519 Private-Key"*) ;;
-            *)
-              echo "::error::KRAKEN_SIGNING_KEY must be an Ed25519 private key PEM (openssl genpkey -algorithm ed25519)."
-              exit 1
-              ;;
-          esac
-
-          openssl pkeyutl -sign -inkey "$KEY_FILE" -rawin -in manifest.json -out manifest.sig
-          openssl pkey -in "$KEY_FILE" -pubout -out public-key.pem
-          openssl pkeyutl -verify -pubin -inkey public-key.pem -rawin -in manifest.json -sigfile manifest.sig
-
-          PUBLIC_KEY=$(openssl pkey -pubin -in public-key.pem -outform DER | base64 -w0)
-          FINGERPRINT=$(openssl pkey -pubin -in public-key.pem -outform DER | openssl dgst -sha256 | awk '{print toupper(substr($2,1,16))}' | sed 's/.\{4\}/& /g; s/ $//')
-
-          jq -n --arg m "$(base64 -w0 manifest.json)" --arg s "$(base64 -w0 manifest.sig)" --arg k "$PUBLIC_KEY" \
-            '{signedManifest: $m, signature: $s, publicKey: $k}' > signed-manifest.json
-          mv signed-manifest.json manifest.json
-          rm -f manifest.sig public-key.pem
-
-          echo "FINGERPRINT=$FINGERPRINT" >> "$GITHUB_ENV"
-          echo "Signed manifest.json with key $FINGERPRINT"
+          chmod +x ./gradlew
+          ./gradlew clean build krakenRelease --stacktrace
+          echo "FINGERPRINT=$(cat build/kraken/signing-key-fingerprint.txt)" >> "$GITHUB_ENV"
 
       - name: Create Git tag
         run: |
@@ -196,8 +88,8 @@ jobs:
             See manifest.json for full details. It is signed with key `${{ env.FINGERPRINT }}`; the Kraken client shows
             this fingerprint on its review screen when you add the repository.
           files: |
-            build/plugins/*.jar
-            manifest.json
+            build/kraken-release/*.jar
+            build/kraken-release/manifest.json
           draft: false
           prerelease: false
         env:

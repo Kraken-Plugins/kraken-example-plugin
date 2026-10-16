@@ -1,10 +1,10 @@
 import java.util.concurrent.Callable
 
 plugins {
-    id 'com.krakenplugins.plugin' version '0.1.1'
+    id 'com.krakenplugins.plugin' version '0.2.0'
 }
 
-def runeLiteVersion = '1.13.1' // latest.release
+def runeLiteVersion = '1.13.2' // latest.release
 def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.2.2'
 
 subprojects {
@@ -18,30 +18,12 @@ subprojects {
                 includeGroup "com.github.kraken"
             }
         }
-        maven {
-            url = 'https://repo.runelite.net'
-            content {
-                excludeGroupByRegex "com\\.github.kraken.*"
-            }
-        }
-        mavenCentral()
-        maven {
-            url = 'https://repo.kraken-plugins.com'
-            content {
-                includeGroup "com.github.kraken"
-            }
-        }
     }
 
-    dependencies {
-        compileOnly group: 'com.github.kraken', name: 'kraken-api', version: krakenApiVersion
-        compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
-        compileOnly 'org.projectlombok:lombok:1.18.30'
-        annotationProcessor 'org.projectlombok:lombok:1.18.30'
-
-        // The Run<Plugin>PluginTest classes run the plugin in plain RuneLite from the IDE.
-        testImplementation group: 'net.runelite', name: 'client', version: runeLiteVersion
-        testImplementation group: 'com.github.kraken', name: 'kraken-api', version: krakenApiVersion
+    kraken {
+        apiVersion = krakenApiVersion
+        runeliteVersion = runeLiteVersion
+        lombokVersion = '1.18.30'
     }
 
     tasks.withType(JavaCompile).configureEach {
@@ -52,4 +34,14 @@ subprojects {
 
 kraken {
     sideload.setFrom({ subprojects.collect { it.tasks.named('jar') } } as Callable)
+
+    // ./gradlew krakenRelease checks every plugin against the Kraken API the client runs, then writes the jars and a
+    // manifest signed with KRAKEN_SIGNING_KEY to build/kraken-release. CI passes the release version in VERSION.
+    release {
+        name = 'Kraken Example Plugins'
+        version = providers.environmentVariable('VERSION').orElse('0.0.0-SNAPSHOT')
+        author = 'RuneWraith'
+        description = 'Collection of RuneLite Automation plugins built with the Kraken API.'
+        github = 'Kraken-Plugins/kraken-example-plugin'
+    }
 }
