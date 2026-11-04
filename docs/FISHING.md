@@ -22,7 +22,7 @@ To use this plugin effectively, please ensure the following:
 ## Limitations
 
 - **Location** - The script only works in the 3 aforementioned locations.
-- **Cooking** - Cooking is only supported at the barbarian village location
+- **Cooking** - Cooking is only supported at the barbarian village location. It uses the permanent fire next to the fishing spots, and needs Cooking level 15 for trout and 25 for salmon. Fish above your Cooking level are not cooked. Enable **Drop Fish** too, so the cooked (and any uncookable) fish are dropped and the script goes back to fishing.
 
 ## Running the Plugin
 To run the mining plugin, use the following commands in your terminal:

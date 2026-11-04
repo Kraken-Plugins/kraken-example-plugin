@@ -111,11 +111,15 @@ client first, then run:
 `runKraken` builds the plugin jars and starts the client the same way the Kraken launcher does, so the client brings the
 Kraken API built for the current RuneLite. Nothing is copied into `~/.runelite/kraken/sideloaded-plugins`.
 
-To check that the Kraken API you compile against works with the one your client runs:
+To check that each plugin only uses Kraken API classes and methods the client actually has:
 
 ```shell
-./gradlew :mining:krakenVersions
+./gradlew krakenCheck
 ```
+
+`krakenCheck` reads the compiled jar and looks up every Kraken API call in the API jar the production Kraken bootstrap
+ships, so a call the client doesn't have fails the build instead of throwing `NoSuchMethodError` in the client. It runs
+as part of `./gradlew build`. `./gradlew :mining:krakenVersions` prints the versions involved.
 
 ### Sideloading by hand
 
@@ -138,13 +142,26 @@ GitHub account or token is needed.
 Each plugin's jar is built as `<plugin>/build/libs/<plugin>-<version>.jar`, with the version set in that plugin's
 `build.gradle`.
 
+### Publishing a release
+
+CI publishes every push to `master` as a GitHub release that the Kraken client can load as an external repository
+(`.github/workflows/workflow.yml`). The work happens in one Gradle task:
+
+```shell
+KRAKEN_SIGNING_KEY="$(cat signing-key.pem)" VERSION=1.0.89 ./gradlew krakenRelease
+```
+
+It checks every plugin with `krakenCheck`, then writes the jars and a signed `manifest.json` to `build/kraken-release`.
+`./gradlew krakenManifest` writes the unsigned manifest to `build/kraken/manifest.json` if you only want to look at it,
+and `./gradlew krakenKeygen` creates a signing key for a repository of your own.
+
 The `Run<Plugin>PluginTest` classes still work for running a single plugin from the IDE without the Kraken client. Add
 `-ea` to the VM args and `--developer-mode` to the program arguments. That path runs plain RuneLite with the Kraken API
 you compile against, so keep `krakenApiVersion` and `runeLiteVersion` in `build.gradle` current.
 
 ## Gradle Kraken API
 
-To use the Kraken API in your own plugin, add the Kraken repository and the Gradle plugin:
+To use the Kraken API in your own plugin, add the Kraken plugin repository and apply the Gradle plugin:
 
 ```groovy
 // settings.gradle
@@ -159,20 +176,23 @@ pluginManagement {
 ```groovy
 // build.gradle
 plugins {
-    id 'com.krakenplugins.plugin' version '0.1.1'
+    id 'com.krakenplugins.plugin' version '0.2.0'
 }
 
-repositories {
-    maven { url = 'https://repo.runelite.net' }
-    maven { url = 'https://repo.kraken-plugins.com' }
-    mavenCentral()
-}
+kraken {
+    apiVersion = '5.2.2'        // adds com.github.kraken:kraken-api
+    runeliteVersion = '1.13.1'  // adds net.runelite:client
+    lombokVersion = '1.18.30'   // optional
 
-dependencies {
-    compileOnly 'net.runelite:client:1.13.1'
-    compileOnly 'com.github.kraken:kraken-api:5.1.7'
+    release {
+        name = 'My Plugins'
+        github = 'me/my-plugins' // jars are downloaded from this repository's GitHub releases
+    }
 }
 ```
+
+The plugin adds the repositories these resolve from and declares them `compileOnly` and `testImplementation`, since the
+client provides both at runtime.
 
 See [the Kraken API docs](https://github.com/Kraken-Plugins/kraken-api?tab=readme-ov-file#gradle-example-recommended) for more.
 
