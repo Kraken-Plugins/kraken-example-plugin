@@ -1,7 +1,7 @@
 import java.util.concurrent.Callable
 
 plugins {
-    id 'com.krakenplugins.plugin' version '0.2.0'
+    id 'com.krakenplugins.plugin' version '0.2.1'
 }
 
 def runeLiteVersion = '1.13.6' // latest.release
