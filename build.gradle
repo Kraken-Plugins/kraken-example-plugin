@@ -4,8 +4,8 @@ plugins {
     id 'com.krakenplugins.plugin' version '0.2.0'
 }
 
-def runeLiteVersion = '1.13.2' // latest.release
-def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.2.2'
+def runeLiteVersion = '1.13.6' // latest.release
+def krakenApiVersion = System.getenv("KRAKEN_API_VERSION") ?: '5.2.8'
 
 subprojects {
     apply plugin: 'com.krakenplugins.plugin'
